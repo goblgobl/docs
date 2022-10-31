@@ -1,0 +1,21 @@
+<h3><a href={{ env.baseURL }}/authen>Overview</a></h3>
+<ul>
+	<li><a href={{ env.baseURL }}/authen/#auth>Authentication</a>
+	<li><a href={{ env.baseURL }}/authen/#config>Configuration</a>
+	<li><a href={{ env.baseURL }}/authen/#errors>Errors & Codes</a>
+	<li><a href={{ env.baseURL }}/authen/#multi_tenancy>Multi-tenancy</a>
+</ul>
+
+<h3>APIS</h3>
+<ul>
+	<li><a href={{ env.baseURL }}/authen/totp>TOTP</a>
+	{%- if page.url == '/authen/totp/' %}
+		<ul>
+			<li><a href={{ env.baseURL }}/authen/totp#parameters>Common Parameters</a>
+			<li><a href={{ env.baseURL }}/authen/totp#create>Generate Secret</a>
+			<li><a href={{ env.baseURL }}/authen/totp#verify>Verify Code</a>
+			<li><a href={{ env.baseURL }}/authen/totp#delete>Delete Secret</a>
+			<li><a href={{ env.baseURL }}/authen/totp#change_key>Change Key</a>
+		</ul>
+	{% endif %}
+</ul>

@@ -1,0 +1,28 @@
+* { margin: 0; padding: 0; }
+
+*, *:before, *:after { box-sizing: border-box; }
+
+body {
+	color: #333;
+	font-size: 20px;
+	font-family: sans-serif;
+}
+
+main {
+	margin-left: 220px;
+	padding: 75px 25px 25px;
+	border-left: 1px solid #ddd;
+}
+
+a {
+	color: #1c5bb3;
+	text-decoration: none;
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+@import "_hf.scss";
+@import "_sidebar.scss";
+@import '_highlight.scss';
+@import '_docs.scss';

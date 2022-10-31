@@ -1,0 +1,265 @@
+---
+layout: main.njk
+title: Authen TOTP
+section: authen
+---
+<h1>TOTP</h1>
+<p>Authen exposes APIs to create, manage and verify TOTP codes as part of a 2FA authentication flow. The flow for setting up and using TOTP is:</p>
+
+<ol>
+	<li>Generate and display a QR code-encoded secret to the user,
+	<li>Associate the secret with the user once they have provided a verification code, and
+	<li>On every login (or other protected action) collect the user's code and verify it using the stored secret
+</ol>
+
+<a class=section name=parameters></a>
+<h2>Common Parameters</h2>
+<p>While each endpoint has its own input parameters, three common parameters worth exploring in detail: <code>user_id</code>, <code>type</code> and <code>key</code>.</p>
+
+<a name=totp_user_id></a>
+<h4><code>user_id</code></h4>
+<p>The <code>user_id</code> parameter is a string, from 1 to 100 characters, which is used to identify the user. In most cases, this would by the <code>id</code> of your user. From Authen's point of view, it is an opaque value.</p>
+
+<a name=totp_type></a>
+<h4><code>type</code></h4>
+<p>The <code>type</code> parameter is a string, from 1 to 100 characters, which, along with the <code>user_id</code> acts as a unique identifier for a record. In most cases a user will have a single TOTP secret and thus <code>type</code> can be omitted (it's always optional). But some systems use different TOTP secrets for distinct actions (e.g. login vs approving a transfer), in which case <code>type</code> should be specified.</p>
+
+<p class=warning>The record's primary key is actually <code>project_id</code>, <code>user_id</code> and <code>type</code>. But the <code>project_id</code> is only meaningful when running in <a href={{ env.baseURL }}/authen#multi_tenancy>multi-tenancy</a></p>
+
+<a name=totp_key></a>
+<h4><code>key</code></h4>
+<p>The <code>key</code> parameter is more complicated. Technically, it is a 32-byte key that Authen uses for encrypting and decrypting a TOTP secret. It's essentially a password for accessing the TOTP secret. When calling the APIs, it must be hex-encoded (thus, it must be exactly 64 characters). But what value should be used?</p>
+
+<p>The least secure option is to use the same 32-byte value for every TOTP record. If this key is leaked and the authen database compromised, an attacker would be able to generate a valid TOTP code for all users. A more secure alternative is to derive the key from the user's password. This is reasonable since, from a data flow point of view, the password is available whenever the TOTP secret must be accessed. The downside to this approach is that the key must be updated whenever the user changes their password (see the <a href=#change_key>change_key api</a>.)</p>
+
+<p>Here are examples of generating a 32-byte hex-encoded key from a string (assumed to be the user's password):</p>
+
+{% code %}
+```go
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"golang.org/x/crypto/scrypt"
+)
+
+func main() {
+	// this would be the user's password
+	password := []byte("Ghanima Atr3id3s")
+
+	// the salt will need to be stored along the user data
+	salt := make([]byte, 8)
+	rand.Read(salt)
+
+	key, err := scrypt.Key(password, salt, 32768, 8, 1, 32)
+	if err != nil {
+		...
+	}
+	// send encodedKey to authen as the `key` parameter
+	encodedKey := hex.EncodeToString(key)
+}
+```
+
+```js:node
+const crypto = require('crypto');
+
+// this would be the user's password
+const password = 'Ghanima Atr3id3s';
+
+// the salt will need to be stored along the user data
+const salt = crypto.randomBytes(16);
+
+crypto.scrypt(password, salt, 32, (err, key) => {
+	// send encodedKey to authen as the `key` parameter
+	const encodedKey = key.toString('hex');)
+})
+```
+{% endcode %}
+
+<p>Note that these examples generate a <code>salt</code>, which needs to be store (in plain text) with the user record.</p>
+
+<a class=section name=create></a>
+<h2>Generate Secret</h2>
+<p>The first step in configuring, or changing, a TOTP secret is to generate a secret and displaying that secret to the user as a QR code:</p>
+
+<div class="tabs endpoint">
+	<code>POST /v1/totp</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'user_id', type: 'string [1..100]', required: true, desc: "<p><a href=#totp_user_id>see note</a>.</p>"},
+			{name: 'type', type: 'string [1..100]', required: false, desc: "<p><a href=#totp_type>see note</a>.</p>"},
+			{name: 'key', type: 'string [64]', required: true, desc: "<p><a href=#totp_key>see note</a>.</p>"},
+			{name: 'account', type: 'string [1..100]', required: true, desc: "<p>Parameter of the generated QR code to help the user identify which site the code belongs to (the account + issuer tend to appear in most TOTP client apps as a label). Authen does not store this value.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		{% response [
+			{name: 'qr', type: 'string', desc: "<p>Base64 encoded PNG of otpauth url (what the user scans). Most apps will simply return this to the client and let the client display the QR code.</p>"},
+			{name: 'secret', type: 'string', desc: "<p>The TOTP secret (this is encoded in the QR code ). Most apps will ignore this value.</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl -X POST "http://127.0.0.1:5200/v1/totp" \
+	-H "Content-Type: application/json" \
+	-d '{
+	"user_id": "df178fd7-4f0d-4109-bd4b-ae36c11b677b",
+	"key": "861d97eb1edad3e8add7c88cfa9577cbe9261cc3cda7329fb632178199414b5f",
+	"account": "leto@test.goblgobl.com"
+}'
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{
+	"qr":"iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAABlBMVEX///8AAABVwtN+AAACqUlEQVR42uyYQY6zMAyFH8oiyxwhN4GLoULFxcJNcoQss0C8X890mHb+AxCkejMa9FWq6bP9bHzjGzcMT5IJXUGYMYKZieSqp+VGQAZ8Qo9H2CLzBk+/i4drCSD9SpapjBjtEXe/lolLewCfZYzkFjGgq12LQOnRccOUXQbIGwKAgKA0F0vTp/8UdTWgIjuBvEWfau//1ubFgEVnqgYQXcZQVYufcTEgPTCFFEjmEY4V3PUJzg0BrKjAUDorvZdoB5LbnYCMgXvYgbBwyYikfonw/H0PLQCe+isEysOzDnXgs6AdAJHJ79C7XTKwQT2tdnyepdcEYKW3lqlM2VH/+t2nwOJuBHiaYMg9bBjjhjpwrcB0/liNAPXodAtJRGnap9aAemTx5KKWIP2s9b30GgBebkC9l8ojq6Nx5f6bx/WAXrVXb5iKy2M8m9geZtwIyDKQKj0Nusijx+14vBxwE4C+ts2LzuRiqu6YcNrFFgBP6xAsMAdB+YfV2vDUFuBT2PEIM1zeTA/eRjFuBOQKUwi0TtI6XFeHgnCuDw0AZPIsMgwTNZhlL000bAfQ16695kUZbRGrqJ3s4jmaGwDkxMybP4vjki2PhD7MeLNqVwNqCLVT1wobJjL7VIE+sIw3AmR5bZ2cA/NkG5E3k/Pb5RoAMqAswmnFB9twXvtlK4CKD0cjdtT6YJ72U1GXAxLx63iIKD1Aenhbgm4B+GTbwgNTBlyWYGxaz+0APzcQPYkbKP30cuZ/DzVXAq8eJ8nMUV0OQz32so+T+MXAcZcb7E7rspPnsSzea/N6wC6cHWecx8Pd683zdoBdm6esRG1eQJ4HrQEaakt2lBur3fsBtA3gcIjFTl509KkOWh/K2BBwHJO1nGsx3+LP5P2ozdaBb3yjqfgXAAD//2lg3x8tmF2oAAAAAElFTkSuQmCC",
+	"secret":"5LBTYHXEBKHR4INTKRBZBSYQ4M"
+}
+{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{% errors [codes.lookup(102005)] %}
+		{%- include '../authen/_errors.njk' %}
+	</div>
+</div>
+
+<a class=section name=verify></a>
+<h2>Verify Code</h2>
+<p>Verifie the user's TOTP code. This has two modes, based on the <code>pending</code> parameter. When <code>true</code>, the recently generated secret (via the <code>POST /v1/totp</code> endpoint), is being confirmed. When <code>false</code> (the default), an already confirmed code is being verified.</p>
+
+<p>Put differently, setting up a new code (or changing an existing one), is a two step process where first the secret is generated and then verified with <code>pending: true</code>. Subsequent verification, say on user login, is done by calling verify with <code>pending: false</code> (or omitted).</p>
+
+<div class="tabs endpoint">
+	<code>POST /v1/totp/verify</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'user_id', type: 'string [1..100]', required: true, desc: "<p><a href=#totp_user_id>see note</a>.</p>"},
+			{name: 'type', type: 'string [1..100]', required: false, desc: "<p><a href=#totp_type>see note</a>.</p>"},
+			{name: 'key', type: 'string [64]', required: true, desc: "<p><a href=#totp_key>see note</a>.</p>"},
+			{name: 'code', type: 'string [6]', required: true, desc: "<p>The TOTP code.</p>"},
+			{name: 'pending', type: 'bool', required: false, desc: "<p>When true, confirm a recently generated secret. When false, or omitted, verify an already-confirmed secret.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		<p>Empty. A <code>200</code> status code indicates success.</p>
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl -X POST "http://127.0.0.1:5200/v1/totp/verify" \
+  -H "Content-Type: application/json" \
+  -d '{
+"user_id": "df178fd7-4f0d-4109-bd4b-ae36c11b677b",
+"key": "861d97eb1edad3e8add7c88cfa9577cbe9261cc3cda7329fb632178199414b5f",
+"code": "611207"
+}'
+		{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{% errors [
+			codes.lookup(102006),
+			codes.lookup(102007),
+			codes.lookup(102008)
+		] %}
+		{%- include '../authen/_errors.njk' %}
+	</div>
+</div>
+
+<a class=section name=delete></a>
+<h2>Delete Secret</h2>
+<p>Deletes the secret.</p>
+
+<div class="tabs endpoint">
+	<code>POST /v1/totp/delete</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'user_id', type: 'string [1..100]', required: true, desc: "<p><a href=#totp_user_id>see note</a>.</p>"},
+			{name: 'type', type: 'string [1..100]', required: false, desc: "<p><a href=#totp_type>see note</a>.</p>"},
+			{name: 'all_types', type: 'bool', required: false, desc: "When <code>true</code>, the <code>type</code> parameter is ignored and all of the user's entries are deleted.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		{% response [
+			{name: 'deleted', type: 'int', desc: "<p>The number of deleted entries.</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl -X POST "http://127.0.0.1:5200/v1/totp/delete" \
+  -H "Content-Type: application/json" \
+  -d '{
+"user_id": "df178fd7-4f0d-4109-bd4b-ae36c11b677b"
+}'
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+		{% highlight "json" %}
+{"deleted": 1}
+		{% endhighlight %}
+	</div>
+
+	<div data-tab=errors>
+		<p>No endpoint-specific errors.</p>
+		{%- include '../authen/_errors.njk' %}
+	</div>
+</div>
+
+<a class=section name=change_key></a>
+<h2>Change Key</h2>
+<p>Change the encryption <code>key</code> of an entry.</p>
+
+<p>While using a per-user key derived from the user's password is the most secure options, it has the obvious downside of needing to be changed whenever the user changes their password.</p>
+
+<div class="tabs endpoint">
+	<code>POST /v1/totp/change_key</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'user_id', type: 'string [1..100]', required: true, desc: "<p><a href=#totp_user_id>see note</a>.</p>"},
+			{name: 'type', type: 'string [1..100]', required: false, desc: "<p><a href=#totp_type>see note</a>.</p>"},
+			{name: 'key', type: 'string [64]', required: true, desc: "<p><a href=#totp_key>see note</a>.</p>"},
+			{name: 'new_key', type: 'string [64]', required: true, desc: "<p><a href=#totp_key>see note</a>.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		<p>Empty. A <code>200</code> status code indicates success.</p>
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl -X POST "http://127.0.0.1:5200/v1/totp/change_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+"user_id": "df178fd7-4f0d-4109-bd4b-ae36c11b677b",
+"key": "861d97eb1edad3e8add7c88cfa9577cbe9261cc3cda7329fb632178199414b5f",
+"new_key": "4486e68dd57059570c79b146e6ae00c136ec60e65b0ee730f89795e5f73aef5e"
+}'
+		{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{% errors [codes.lookup(102006), codes.lookup(102007)] %}
+		{%- include '../authen/_errors.njk' %}
+	</div>
+</div>

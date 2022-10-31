@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name=viewport content="width=device-width">
+<link href={{ env.baseURL }}/css/main.css rel=stylesheet>
+<title>{{ title }} | GoblGobl Docs</title>
+<link rel=icon type="image/png" href="{{ env.baseURL }}/favicon.png">
+<header>
+	<ul>
+		<li><a href={{ env.baseURL }}/authen>Authen</a>
+	</ul>
+	<ul>
+		<li><a href=https://github.com/goblgobl/{{ (section or '') }}>GitHub</a>
+	</ul>
+</header>
+<div id=altnav>☰</div>
+<div id=nav>{%- include '../' + (section or '') + '/_nav.njk' %}</div>
+<main>{{ content | safe }}</main>
+<script src={{ env.baseURL }}/docs.js></script>

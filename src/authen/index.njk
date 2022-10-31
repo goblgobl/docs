@@ -1,0 +1,252 @@
+---
+layout: main.njk
+title: Authen
+section: authen
+---
+<h1>Authen</h1>
+<p>Authen is a web service used to enhance an existing authentication system. It is a Go executable that exposes an HTTP interface and supports 3 storage backends: <a href="https://www.sqlite.org/">SQLite</a>, <a href="https://www.postgresql.org/">PostgreSQL</a> and <a href="https://www.cockroachlabs.com/">CockroachDB</a>.</p>
+
+<p>It is open source, easy to install, reliable, secure and performant. When the PostgreSQL or CockroachDB storage options are used, multiple instances of Authen can be run to achieve high available and horizontal scaling.</p>
+
+<a class=section name=auth></a>
+<h2>Authentication</h2>
+<p>Authen is designed to be called exclusively from a controlled system (i.e. a backend system). It should not be exposed publicly. As such, it does not authenticate requests.</p>
+
+<p>Authen does support multi-tenancy though. See the <a href="#multi_tenancy">multi-tenancy section</a>.</p>
+
+<a class=section name=config></a>
+<h2>Configuration</h2>
+<p>By default, configuration will be loaded from the <code>config.json</code> file. This can be changed by specifying the <code>-config PATH</code> argument on startup.</p>
+
+{% code %}
+```json:basic
+{
+  "storage": {
+    "type": "sqlite",
+    "path": "/opt/authen/data.sqlite"
+  },
+  "totp": {
+    "issuer": "yourcompany.com"
+  }
+}
+```
+
+```json:advance
+{
+  "instance_id": 0,
+  "migrations": true,
+  "project_update_frequency": 0,
+
+  "log": {
+    "level": "info"
+    "pool_size": 100,
+    "format": "kv",
+    "kv": {
+      "max_size": 4096
+    }
+  },
+
+  "http": {
+    "listen": "127.0.0.1:5200"
+  },
+
+  "storage": {
+    "type": "postgres",
+    "url": "postgres://localhost:5432/gobl_authen"
+  },
+
+  "totp": {
+    "max": 0,
+    "setup_ttl": 300,
+    "secret_length": 16,
+    "issuer": "yourcompany.com"
+  }
+}
+```
+{% endcode %}
+
+<h3 class=section>Common Configuration Settings</h3>
+<a name=config_log_level></a>
+<h4><code>log.level</code></h4>
+<p>The log level to use. Can one one of <code>INFO</code>, <code>WARN</code>, <code>ERROR</code>, <code>FATAL</code> or <code>NONE</code>. Defaults to <code>INFO</code>.</p>
+
+<a name=config_http_listen></a>
+<h4><code>http.listen</code></h4>
+<p>The <code>address:port</code> that the HTTP should listen on. Please note that Authen is not designed to be exposed publicly. The specified address should not be publicly reachable. Defaults to <code>127.0.0.1:5200</code>.</p>
+
+<a name=config_totp_issuer></a>
+<h4><code>totp.issuer</code></h4>
+<p>The issuer to include in the generated otpauth URL (which is part of the data encoded in the QR code). This helps prevent collisions when the user has multiple TOTP for different services. This will generally be the name of your company or website.</p>
+
+<a name=config_storage_type></a>
+<h4><code>storage.type</code></h4>
+<p>Must be either <code>sqlite</code>, <code>postgres</code> or <code>cockroach</code>.</p>
+
+<p class=warning>This setting is required and there is no default.</p>
+
+<a name=config_storage_sqlite_path></a>
+<h4><code>storage.sqlite.path</code></h4>
+<p>When <a href=#config_storage_type><code>storage.type</code></a> is set to <code>sqlite</code>, this must be set to the location of the SQLite database. If the file does not exist, it will be created.</p>
+
+<a name=config_storage_postgres_url></a>
+<h4><code>storage.postgres.url</code></h4>
+<p>When <a href=#config_storage_type><code>storage.type</code></a> is set to <code>postgres</code>, this must be the postgres connection string.</p>
+
+<a name=config_storage_cockroach_url></a>
+<h4><code>storage.cockroach.url</code></h4>
+<p>When <a href=#config_storage_type><code>storage.type</code></a> is set to <code>cockroach</code>, this must be the cockroach connection string. Note that cockroach DB uses the same connection string format as PostgreSQL, including the <code>postgres://</code> protocol. Typically, only the port is different.</p>
+
+<h3 class=section>Advanced Configuration Settings</h3>
+<a name=config_instance_id></a>
+<h4><code>instance_id</code></h4>
+<p>This value should only be set when multiple instances of Authen are deployed. It defaults to <code>0</code>, which is fine when a single instance of Authen is used.</p>
+
+<p>Every request is assigned a <code>RequestId</code>, which is included in any logs generated with respect to the request, as well as placed in the <code>RequestId</code> header of the response. While the code>RequestId</code> isn't guaranteed to be unique, in deployments using multiple instances of Authen, giving each instance a unique id (from 0-255) will greatly reduce duplicates.</p>
+
+<a name=config_multi_tenancy></a>
+<h4><code>multi_tenancy</code></h4>
+<p>See the <a href="#multi_tenancy">multi-tenancy section</a> for more details. In short, when <code>true</code>, each tenant (called a project) is loaded from the database based on the <code>Gobl-Project</code> request header. Some of the configuration settings listed here are ignored in favor of project-specific configuration (stored along the project in the database).</p>
+
+<a name=config_project_update_frequency></a>
+<h4><code>project_update_frequency</code></h4>
+<p>Time, in seconds, to scan for changed project configuration. This value should only be set when <a href="#multi_tenancy">multi-tenancy</a> is enabled. It defaults to 0, which disables the scan, which is correct in single-tenancy as there is no project data.</p>
+
+<p>A reasonable value for this, when using multi-tenancy, would be 60. This would mean that changes made to existing projects would take up to 60 seconds before being registered.</p>
+
+<a name=config_migrations></a>
+<h4><code>migrations</code></h4>
+<p>By default, Authen will automatically run data migrations on startup (these are baked into the binary). The only valid reason to set this to <code>false</code> is when multiple Authen servers are deployed. See <a href=#migrations>the migrations section</a> for more details.</p>
+
+<a name=config_log_pool_size></a>
+<h4><code>log.pool_size</code></h4>
+<p>Authen pre-allocates a pool of loggers which helps reduce the amount of memory that is created and which must be garbage collected during runtime. The amount of pre-allocated memory depends on the pool_size and the <a href="#config_log_kv_max_size">configured maximum log size</a>.</p>
+
+<p>For best performance, at the cost of memory, this should be set to the maximum number of concurrent requests the system will handle. It defaults to <code>100</code>.</p>
+
+<p class=warning>The log pool will not grow or shrink and is non-blocking. If more loggers are requested than the pool can handle, loggers will be dynamically allocated, but will not be added back to the pool.</p>
+
+<a name=config_log_format></a>
+<h4><code>log.format</code></h4>
+<p>The format of the generated log messages. Currently, the only supported value, and the default, is <code>kv</code> for a key=value type log output.</p>
+
+<a name=config_log_kv_max_size></a>
+<h4><code>log.kv.max_size</code></h4>
+<p>The maximum size of an individual log message. Any additional data will be discarded. Defaults to <code>4096</code>. With a default <a href=#config_log_pool_size>pool_size</a> of <code>100</code>, the total memory pre-allocated for logging is <code>100 * 4096</code> bytes (0.4096 megabytes).</p>
+
+<a name=config_totp_max></a>
+<h4><code>totp.max</code></h4>
+<p>The maximum number of TOTP entries to store. The default, <code>0</code> allows for an unlimited number. For self-hosted setups where you have total control over the backend which calls Authen, there's generally no reason to set this.</p>
+
+<p>In multi-tenancy mode, this value is ignored and the project-specific configuration is used.</p>
+
+<a name=config_totp_setup_ttl></a>
+<h4><code>totp.setup_ttl</code></h4>
+<p>A user's TOTP is configured, or changed, in two phases. First the user is presented with a QR code and then their TOTP is validated. Having the user validate the code ensures that we don't enable a TOTP secret that the user cannot verify. This setting defines the time, in second, that the user has for entering their verification from the time the QR code is generated. Defaults to <code>300</code> (5 minutes).</p>
+
+<p>In multi-tenancy mode, this value is ignored and the project-specific configuration is used.</p>
+
+<a name=config_totp_secret_length></a>
+<h4><code>totp.secret_length</code></h4>
+<p>The length of the TOTP secret to generate. Defaults to <code>16</code>.</p>
+
+<p>In multi-tenancy mode, this value is ignored and the project-specific configuration is used.</p>
+
+<a class=section name=errors></a>
+<h2>Errors and Codes</h2>
+<p>Authen tries to provide developer-friendly error and validation messages. Every error response has an integer <code>code</code> field which identifies the error. Every error response also has a string <code>error</code> field which is a description of the error, in English. While basic and aimed at guiding developers, the <code>error</code> field will never contain sensitive data and can shown to end-users (although, again, it's rather basic, might be a little technical, and is always in English).</p>
+
+<p>For example, a request to an invalid route would return a response with a 404 status code, as well as body with a <code>code</code> and <code>error</code> field: </p>
+
+{% highlight "bash" %}
+$ curl http://127.0.0.1:5200/invalid
+
+{
+  "code": 102001,
+  "error": "not found"
+}
+{% endhighlight %}
+
+<a class=section name=errors_codes></a>
+<h3>Error Codes</h3>
+{% errors codes.http.concat(codes.authen.http) %}
+
+<a class=section name=errors_validation></a>
+<h3>Validation Errors</h3>
+<p>A validation error is a normal error with a code of <code>2004</code>. Validation errors always contain an <code>invalid</code> field which contains an error of errors. Each item within this array contains its own <code>code</code> and <code>error</code> field and, optionally, a <code>field</code> and <code>data</code> field.
+
+{% highlight "bash" %}
+$ curl -X POST "http://127.0.0.1:5200/v1/totp" \
+   -H "Content-Type: application/json" \
+   -d '{"key": "goku", "account": 9001}'
+
+{
+"code": 2004,
+"error": "invalid data",
+"invalid": [
+  {
+    "code": 1003,
+    "field": "key",
+    "error": "must be between 64 and 64 characters",
+    "data": {"min": 64, "max": 64}
+  },
+  {
+    "code": 101001,
+    "field": "key",
+    "error": "key must be a 32-byte hex encoded value"
+  },
+  {
+    "code": 1001,
+    "field": "user_id",
+    "error": "required"
+  },
+  {
+    "code": 1002,
+    "field": "account"
+    "error": "must be a string",
+  }
+]}
+{% endhighlight %}
+
+{% errors codes.validation.concat(codes.authen.validation) %}
+
+<p>The <code>error</code> field contains a user-friendly error message in English. The presence and contents of the optional <code>data</code> field depends on the <code>code</code>. We can see that <code>code</code> <code>1003</code>, which represents a string length validation error, contains a data field with the <code>min</code> and <code>max</code> length.</p>
+
+<a class=section name=multi_tenancy></a>
+<h2>Multi-Tenancy</h2>
+<p>Authen supports multi-tenancy largely by way of <code>project_id</code> uuid columns in the database. When multi-tenancy is enabled, the project is identified via the <code>Gobl-Project</code> header.<p>
+
+<p>To enable multi-tenancy, the <a href=#config_multi_tenancy><code>multi_tenancy</code></a> configuration parameter must be set to <code>true.</code>
+
+<p class=warning>Even with multi-tenancy enabled, Authen does not do authentication. The <code>Gobl-Project</code> header parameter becomes required, and an invalid or unknown id will result in an error, but it is up to the caller to make sure that the correct id is passed.</p>
+
+<h3>Project Management</h3>
+<p>There is currently no API to manage projects. However, projects can be added, removed or deleted by modifying the <code>authen_projects</code> table of the configured database.</p>
+
+<p>While the exact structure of the table will depend on the configured storage type, it is a simple schema. For PostgreSQL, the table is defined as:</p>
+
+{% highlight "sql" %}
+create table authen_projects (
+  id uuid not null primary key,
+  totp_max int not null,
+  totp_issuer text not null,
+  totp_setup_ttl int not null,
+  totp_secret_length int not null,
+  created timestamptz not null default now(),
+  updated timestamptz not null default now()
+);
+{% endhighlight %}
+
+<p>We can see from the above schema that, where it makes sense, multi-tenancy uses per-project configuration values. Specifically, when multi-tenancy is enabled, the global <code>totp.*</code> configuration is ignored (you'll get a warning if the <code>totp</code> section is defined when <code>multi_tenancy == true</code>).</p>
+
+<h3>Project Update</h3>
+<p>Internally, Authen has a non-expiring id => Project cache. While new projects will be detected, changes to existing projects will not. Setting the <a href=#config_project_update_frequency><code>project_update_frequency</code></a> value will cause Authen to periodically look for updated projects based on the <code>updated</code> column of the <code>authen_projects.</code> table. A value of 60 (seconds) is reasonable.</p>
+
+<p>We hope to provide better way to manage projects in the future.</p>
+
+<a class=section name=migrations></a>
+<h2>Data Migrations</h2>
+<p>When you run a new version of Authen, it will automatically apply any necessary data/schema migrations to the configured store.</p>
+
+<p>When multiple Authen services are deployed, this behavior might not be desirable. There are two options. The first is to set the <a href=#config_migrations><code>migrations</code></a> configuration option to false for all but one server. Ideally, the one server that will run migrations is launched first.</p>
+
+<p>The other option is to run the <code>authen</code> binary with the special <code>-migrate</code> flag. This will load the same <code>config.json</code> (or whatever <code>-config PATH</code> you specify), run any necessary migrations, and exit.</p>
