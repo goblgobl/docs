@@ -1,0 +1,80 @@
+---
+layout: main.njk
+title: Authen Misc APIs
+section: authen
+---
+<h1>Misc</h1>
+<p>Authen exposes some miscallaneous APIs for verifying the health (ping) and retrieving information (info) about the system.</p>
+
+<a class=section name=ping></a>
+<h2>Ping</h2>
+<p>Returns ok if Authen is working properly. This is an endpoint that a health-check would want to monitor. Callers can either use the status code (<code>200</code>) or the basic response.</p>
+
+<div class="tabs endpoint">
+	<code>GET /v1/ping</code>
+	<ul>
+		<li data-tab=res class=active>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=res>
+		{% response [
+			{name: 'ok', type: 'bool', desc: "<p>Should always be <code>true</code>.</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl "http://127.0.0.1:5200/v1/ping"
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{"ok":true}
+{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{%- include './_errors.njk' %}
+	</div>
+</div>
+<a class=section name=info></a>
+<h2>Info</h2>
+<p>Returns information about the system. The information included in the response is not sensitive and should be included in any bug reports.</p>
+
+<div class="tabs endpoint">
+	<code>GET /v1/info</code>
+	<ul>
+		<li data-tab=res class=active>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=res>
+		{% response [
+			{name: 'go', type: 'string', desc: "<p>The version of Go used to build the system.</p>"},
+			{name: 'commit', type: 'string', desc: "<p>The commit hash.</p>"},
+			{name: 'storage.type', type: 'string', desc: "<p>The storage engine being used.</p>"},
+			{name: 'storage.migration', type: 'int', desc: "<p>The version of the migrations being used.</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl "http://127.0.0.1:5200/v1/info"
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{
+	"go": "go1.19",
+	"commit": "ba4242b5bddacb39e4c1d9cdaa34f4a5fccbdbea",
+	"storage": {
+		"migration": 1,
+		"type": "postgres"
+	}
+}
+{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{%- include './_errors.njk' %}
+	</div>
+</div>

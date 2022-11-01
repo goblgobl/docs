@@ -18,4 +18,11 @@
 			<li><a href={{ env.baseURL }}/authen/totp#change_key>Change Key</a>
 		</ul>
 	{% endif %}
+	<li><a href={{ env.baseURL }}/authen/misc>Misc</a>
+	{%- if page.url == '/authen/misc/' %}
+		<ul>
+			<li><a href={{ env.baseURL }}/authen/misc#ping>Ping</a>
+			<li><a href={{ env.baseURL }}/authen/misc#info>Info</a>
+		</ul>
+	{% endif %}
 </ul>

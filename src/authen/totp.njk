@@ -1,6 +1,6 @@
 ---
 layout: main.njk
-title: Authen TOTP
+title: Authen TOTP APIs
 section: authen
 ---
 <h1>TOTP</h1>
@@ -125,7 +125,7 @@ curl -X POST "http://127.0.0.1:5200/v1/totp" \
 	</div>
 	<div data-tab=errors>
 		{% errors [codes.lookup(102005)] %}
-		{%- include '../authen/_errors.njk' %}
+		{%- include './_errors.njk' %}
 	</div>
 </div>
 
@@ -172,7 +172,7 @@ curl -X POST "http://127.0.0.1:5200/v1/totp/verify" \
 			codes.lookup(102007),
 			codes.lookup(102008)
 		] %}
-		{%- include '../authen/_errors.njk' %}
+		{%- include './_errors.njk' %}
 	</div>
 </div>
 
@@ -217,8 +217,7 @@ curl -X POST "http://127.0.0.1:5200/v1/totp/delete" \
 	</div>
 
 	<div data-tab=errors>
-		<p>No endpoint-specific errors.</p>
-		{%- include '../authen/_errors.njk' %}
+		{%- include './_errors.njk' %}
 	</div>
 </div>
 
@@ -260,6 +259,6 @@ curl -X POST "http://127.0.0.1:5200/v1/totp/change_key" \
 	</div>
 	<div data-tab=errors>
 		{% errors [codes.lookup(102006), codes.lookup(102007)] %}
-		{%- include '../authen/_errors.njk' %}
+		{%- include './_errors.njk' %}
 	</div>
 </div>
