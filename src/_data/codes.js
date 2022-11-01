@@ -1,3 +1,5 @@
+const env = require('./env');
+
 const http = [
 	{code: 2001, desc: "<p>A generic internal server error. This is the least specific and thus least useful error. The response will have an uuid <code>Error-Id</code> header and the same value will be in the <code>error_id</code> field of the response. Assuming ERROR level (or lower) logging is enabled, a log containing the eid=$ID attribute will contain more data. Because this is an unexpected error, including more details in the HTTP response could result in sensitive data being leaked, thus only a referenced to the logged error is provided.</p>"},
 	{code: 2002, desc: "<p>A response could not be serialized to JSON. Like the <a href=#error_2001>2001 error</a>, please see the <code>error_id</code> and corresponding log entry. This error is almost certainly a result of a bug. We we hope that you'll report it.</p>"},
@@ -22,7 +24,7 @@ const authen = {
 		{code: 102001, desc: "<p>Not found. Specifically relates to the path in the URL.</p>"},
 		{code: 102002, desc: "<p><code>Gobl-Project</code> header is missing. Only applicable when multi-tenancy is enabled.</p>"},
 		{code: 102003, desc: "<p>The id specified by the <code>Gobl-Project</code> header was not valid. Only applicable when multi-tenancy is enabled.</p>"},
-		{code: 102005, desc: "<p>The project has reached the <a href=#config_totp_max>maximum configured TOTP</a> entries.</p>"},
+		{code: 102005, desc: `<p>The project has reached the <a href=${env.baseURL}/authen/#config_totp_max>maximum configured TOTP</a> entries.</p>`},
 		{code: 102006, desc: "<p>The TOTP entry could not be found. This means the <code>user_id</code> or optionally <code>user_id + type</code> did not correspond to an existing TOTP (or <code>project_id + user_id + type</code> when multi-tenancy is enabled). Note that TOTP that are setup but not confirmed before the <a href=#config_totp_setup_ttl>configured TTL</a> are periodically deleted.</p>"},
 		{code: 102007, desc: "<p>The <code>key</code> parameter to decrypt/encrypt the TOTP secret was incorrect.</p>"},
 		{code: 102008, desc: "<p>The <code>code</code> parameter to confirm or verify a TOTP was incorrect.</p>"}
