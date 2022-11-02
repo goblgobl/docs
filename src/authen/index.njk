@@ -8,6 +8,23 @@ section: authen
 
 <p>It is open source, easy to install, reliable, secure and performant. When the PostgreSQL or CockroachDB storage options are used, multiple instances of Authen can be run to achieve high available and horizontal scaling.</p>
 
+<a class=section name=running></a>
+<h2>Running</h2>
+<p>Authen is meant to be both easy to run and easy to compile.</p>
+
+<p>You can <a href="https://github.com/goblgobl/authen/releases">grab the latest pre-compiled binary</a>, create a simple <a href=#config>config.json</a> and run it.</p>
+
+<p>To compile the project, you'l need a recent version of Go (1.18+). <a href="https://github.com/goblgobl/authen">Download the source</a> and run:</p>
+
+{% highlight "bash" %}
+wget https://github.com/goblgobl/authen/archive/refs/heads/master.tar.gz
+tar -xzvf master.tar.g
+cd authen-master
+make build
+{% endhighlight %}
+
+<p>To generate an executable named <code>authen</code>.</p>
+
 <a class=section name=auth></a>
 <h2>Authentication</h2>
 <p>Authen is designed to be called exclusively from a controlled system (i.e. a backend system). It should not be exposed publicly. As such, it does not authenticate requests.</p>
