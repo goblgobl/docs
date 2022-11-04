@@ -19,6 +19,14 @@
 			<li><a href=#change_key>Change Key</a>
 		</ul>
 	{% endif %}
+	<li><a href={{ env.baseURL }}/authen/ticket>Ticket</a>
+	{%- if page.url == '/authen/ticket/' %}
+		<ul>
+			<li><a href=#create>Create</a>
+			<li><a href=#use>Use</a>
+			<li><a href=#delete>Delete</a>
+		</ul>
+	{% endif %}
 	<li><a href={{ env.baseURL }}/authen/misc>Misc</a>
 	{%- if page.url == '/authen/misc/' %}
 		<ul>

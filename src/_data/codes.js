@@ -27,10 +27,14 @@ const authen = {
 		{code: 102005, desc: `<p>The project has reached the <a href=${env.baseURL}/authen/#config_totp_max>maximum configured TOTP</a> entries.</p>`},
 		{code: 102006, desc: "<p>The TOTP entry could not be found. This means the <code>user_id</code> or optionally <code>user_id + type</code> did not correspond to an existing TOTP (or <code>project_id + user_id + type</code> when multi-tenancy is enabled). Note that TOTP that are setup but not confirmed before the <a href=#config_totp_setup_ttl>configured TTL</a> are periodically deleted.</p>"},
 		{code: 102007, desc: "<p>The <code>key</code> parameter to decrypt/encrypt the TOTP secret was incorrect.</p>"},
-		{code: 102008, desc: "<p>The <code>code</code> parameter to confirm or verify a TOTP was incorrect.</p>"}
+		{code: 102008, desc: "<p>The <code>code</code> parameter to confirm or verify a TOTP was incorrect.</p>"},
+		{code: 102009, desc: `<p>The project has reached the <a href=${env.baseURL}/authen/#config_ticket_max>maximum configured tickets</a>.</p>`},
+		{code: 102010, desc: `<p>The <code>payload</code> is larger than the <a href=${env.baseURL}/authen/#config_ticket_max_payload_length>maximum configured length</a>.</p>`},
+		{code: 102011, desc: "<p>The <code>ticket</code> could not be found.</p>"}
 	],
 	validation: [
-		{code: 101001, desc: "<p>The <code>key</code> parameter was not a valid HEX-encoded value.</p>"}
+		{code: 101001, desc: "<p>The <code>key</code> parameter was not a valid HEX-encoded value.</p>"},
+		{code: 101002, desc: "<p>The <code>ticket</code> parameter was not a valid Base64-encoded value.</p>"}
 	]
 };
 

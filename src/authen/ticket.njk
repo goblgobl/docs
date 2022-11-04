@@ -1,0 +1,148 @@
+---
+layout: main.njk
+title: Authen Ticket APIs
+section: authen
+---
+<h1>Ticket</h1>
+<p>Authen exposes APIs to create, use and delete tickets. A ticket is a opaque identifier that is associated with data. Tickets generally have a maximum number of use (often 1) and an expiration - though they can also be configured for unlimited use and with no expiration.</p>
+
+<p>A common use-case for tickets is to transfer data from one system to another. This can be used, for example, as a form of single sign-on. A logged in client makes a transfer request to System A. System A generates and returns a ticket to the client. This ticket is only valid for 30 seconds and only for a single use; it's associated with the <code>user_id</code>. The client then sends the ticket to System B. As long as System B trusts System A, it can be sure that the owner of the ticket is the <code>user_id</code> associated with the ticket.</p>
+
+<p>Tickets have advantages and disadvantages over alternative approaches, such as transfering encrypted and/or signed data via the client. The main advantage is that revocation and usage limits are first class features.</p>
+
+<a class=section name=create></a>
+<h2>Create</h2>
+<p>Tickets can be created with a usage limit, an time-to-live and/or a payload:</p>
+
+<div class="tabs endpoint">
+	<code>POST /v1/totps</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'ttl', type: 'int [0..]', required: false, desc: "<p>The time to live, in seconds, of the ticket. If not specified, this default sot <code>60</code> (60 seconds). A value of <code>0</code> indicates that the ticket can be used forever.</p>"},
+			{name: 'uses', type: 'int [0..]', required: false, desc: "<p>The maximum number of times the ticket can be used. If not specified, this defaults to <code>1</code>. A value of <code>0</code> indicates that the ticket can be used an unlimited number of times.</p>"},
+			{name: 'payload', type: 'any', required: false, desc: "<p>Arbitrary data to associate with the ticket. This data will be returned when the ticket is used. This can be omitted/null.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		{% response [
+			{name: 'ticket', type: 'string', desc: "<p>The ticket (this is a base64 encoded opaque value, but callers shoudl not assume anything about this value except that it's a non-empty string).</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl -X POST "http://127.0.0.1:5200/v1/tickets" \
+	-H "Content-Type: application/json" \
+	-d '{
+	"uses": 2,
+	"ttl": 50,
+	"payload": {"user_id": 9001}
+}'
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{"ticket":"UrX/fTU0TaEEBv1ZlhpImz1c1Ts"}
+{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{% errors [codes.lookup(102009), codes.lookup(102010)] %}
+		{%- include './_errors.njk' %}
+	</div>
+</div>
+
+<a class=section name=use></a>
+<h2>Use</h2>
+<p>Uses the ticket, returning the payload and the number of uses left (if any).</p>
+
+<div class="tabs endpoint">
+	<code>POST /v1/totps/uses</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'ticket', type: 'string', required: true, desc: "<p>The ticket to use. This from from the response from the create endpoint.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		{% response [
+			{name: 'uses', type: 'int', desc: "<p>The number of uses left. Null for a ticket with unlimited use.</p>"},
+			{name: 'payload', type: 'any', desc: "<p>The data, if any, associated with the ticket when it was created.</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl -X POST "http://127.0.0.1:5200/v1/tickets/use" \
+	-H "Content-Type: application/json" \
+	-d '{"ticket": "UrX/fTU0TaEEBv1ZlhpImz1c1Ts"}'
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{
+	"uses": 1,
+	"payload": {"user_id": 9001}
+}
+{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{% errors [codes.lookup(102011)] %}
+		{%- include './_errors.njk' %}
+	</div>
+</div>
+
+
+<a class=section name=delete></a>
+<h2>Delete</h2>
+<p>Deletes the ticket.</p>
+
+<div class="tabs endpoint">
+	<code>POST /v1/totps/delete</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'ticket', type: 'string', required: true, desc: "<p>The ticket to use. This from from the response from the create endpoint.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		{% response [
+			{name: 'uses', type: 'int', desc: "<p>The number of uses left. Null for a ticket with unlimited use.</p>"},
+			{name: 'deletes', type: 'int', desc: "<p>The number of deleted tickets (currentlt must be either 0 or 1).</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl -X POST "http://127.0.0.1:5200/v1/tickets/delete" \
+	-H "Content-Type: application/json" \
+	-d '{"ticket": "UrX/fTU0TaEEBv1ZlhpImz1c1Ts"}'
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{
+	"uses": 1,
+	"deleted": 1
+}
+{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{%- include './_errors.njk' %}
+	</div>
+</div>
