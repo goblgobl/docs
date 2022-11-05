@@ -52,10 +52,11 @@ make build
 {
   "instance_id": 0,
   "migrations": true,
-  "project_update_frequency": 0,
+  "db_clean_frequency": 120,
+  "project_update_frequency": 120,
 
   "log": {
-    "level": "info"
+    "level": "info",
     "pool_size": 100,
     "format": "kv",
     "kv": {
@@ -131,9 +132,21 @@ make build
 
 <a name=config_project_update_frequency></a>
 <h4><code>project_update_frequency</code></h4>
-<p>Time, in seconds, to scan for changed project configuration. This value should only be set when <a href="#multi_tenancy">multi-tenancy</a> is enabled. It defaults to 0, which disables the scan, which is correct in single-tenancy as there is no project data.</p>
+<p>Frequency, in seconds, to scan for changed project configuration. This value should only be set when <a href="#multi_tenancy">multi-tenancy</a> is enabled. It defaults to 0, which disables the scan, which is correct in single-tenancy as there is no project data.</p>
 
 <p>A reasonable value for this, when using multi-tenancy, would be 60. This would mean that changes made to existing projects would take up to 60 seconds before being registered.</p>
+
+<a name=config_db_clean_frequency></a>
+<h4><code>db_clean_frequency</code></h4>
+<p>Frequency, in seconds, to "clean" the database. Exactly what happens when the database is "cleaned" is meant to be an implementation detail. The behavior can change in the future. It currently means:</p>
+
+<ul>
+  <li>Deleting expired TOTPs
+  <li>Deleting expired tickets
+  <li>Deleting tickets with no more uses
+</ul>
+
+<p>The default value is <code>120</code> seconds. This value should not be set to <code>0</code>, which disables the cleaner, except for advance cases. When multiple instances are used (HA), it is reasonable to disable the cleaner on all but one instance. Alternatively, in most cases, letting the cleaner run on each instance is also fine (the cleaner start with a random delay, so each instance will likely run at different times).</p>
 
 <a name=config_migrations></a>
 <h4><code>migrations</code></h4>
