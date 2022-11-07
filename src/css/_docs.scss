@@ -127,3 +127,14 @@ table {
 		white-space: normal;
 	}
 }
+
+@media (max-width: 750px) {
+	div.endpoint {
+		overflow: scroll;
+	}
+	div.tabs {
+		& > div {
+			overflow: scroll;
+		}
+	}
+}

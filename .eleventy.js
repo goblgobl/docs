@@ -42,7 +42,7 @@ module.exports = function(config) {
 
 	config.addShortcode('parameters', function(parameters) {
 		let html = '<table class=parameters><thead>'
-		html += '<tr><th>name<th>type<th>req<th></tr></thead><tbody>';
+		html += '<tr><th>name<th>type<th>req<th>desc</tr></thead><tbody>';
 		for (let i = 0; i < parameters.length; i++) {
 			const p = parameters[i];
 			html += `<tr><td><code>${p.name}</code><td>${p.type}<td>${p.required ? '✓' : ''}<td>${p.desc}</tr>`;
@@ -62,7 +62,7 @@ module.exports = function(config) {
 
 	config.addShortcode('errors', function(errors) {
 		let html = '<table class=errors><thead>';
-		html += '<tr><th>code<th><th></tr></thead><tbody>';
+		html += '<tr><th>code<th><th>desc</tr></thead><tbody>';
 		for (let i = 0; i < errors.length; i++) {
 			const e = errors[i];
 			html += `<tr><td><code><a name=error_${e.code}></a>${e.code}</code><td>${e.desc}</tr>`;
