@@ -30,7 +30,10 @@ const authen = {
 		{code: 102008, desc: "<p>The <code>code</code> parameter to confirm or verify a TOTP was incorrect.</p>"},
 		{code: 102009, desc: `<p>The project has reached the <a href=${env.baseURL}/authen/#config_ticket_max>maximum configured tickets</a>.</p>`},
 		{code: 102010, desc: `<p>The <code>payload</code> is larger than the <a href=${env.baseURL}/authen/#config_ticket_max_payload_length>maximum configured length</a>.</p>`},
-		{code: 102011, desc: "<p>The <code>ticket</code> could not be found.</p>"}
+		{code: 102011, desc: "<p>The <code>ticket</code> could not be found.</p>"},
+		{code: 102012, desc: `<p>The project has reached the <a href=${env.baseURL}/authen/#config_login_log_max>maximum configured login logs</a>.</p>`},
+		{code: 102013, desc: `<p>The <code>payload</code> is larger than the <a href=${env.baseURL}/authen/#config_login_log_max_payload_length>maximum configured length</a>.</p>`},
+
 	],
 	validation: [
 		{code: 101001, desc: "<p>The <code>key</code> parameter was not a valid HEX-encoded value.</p>"},

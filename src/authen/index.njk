@@ -83,6 +83,11 @@ make build
   "ticket": {
     "max": 0,
     "max_payload_length": 0
+  },
+
+  "login_log": {
+    "max": 0,
+    "max_payload_length": 0
   }
 }
 ```
@@ -195,6 +200,18 @@ make build
 <a name=config_ticket_max_payload_length></a>
 <h4><code>ticket.max_payload_length</code></h4>
 <p>The maximum lenght, in bytes, of each ticket payload. The default, <code>0</code> allows for an unlimited payload length. For self-hosted setups where you have total control over the backend which calls Authen, there's generally no reason to set this.</p></p>
+
+<p>In multi-tenancy mode, this value is ignored and the project-specific configuration is used.</p>
+
+<a name=config_login_log_max></a>
+<h4><code>login_log.max</code></h4>
+<p>The maximum number of login_logs allowed to be created. The default, <code>0</code> allows for an unlimited number. For self-hosted setups where you have total control over the backend which calls Authen, there's generally no reason to set this.</p>
+
+<p>In multi-tenancy mode, this value is ignored and the project-specific configuration is used.</p>
+
+<a name=config_login_log_max_payload_length></a>
+<h4><code>login_log.max_payload_length</code></h4>
+<p>The maximum lenght, in bytes, of each login log payload. The default, <code>0</code> allows for an unlimited payload length. For self-hosted setups where you have total control over the backend which calls Authen, there's generally no reason to set this.</p></p>
 
 <p>In multi-tenancy mode, this value is ignored and the project-specific configuration is used.</p>
 

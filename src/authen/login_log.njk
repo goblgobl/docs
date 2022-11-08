@@ -1,0 +1,109 @@
+---
+layout: main.njk
+title: Authen Login Logs APIs
+section: authen
+---
+<h1>Login Log</h1>
+<p>Login Logs is a simple API to record a login event (e.g. succesful login) and retrieve a list of events.</p>
+
+<a class=section name=create></a>
+<h2>Create</h2>
+<p>Create a login log:</p>
+
+<div class="tabs endpoint">
+	<code>POST /v1/login_logs</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'user_id', type: 'string [1..100]', required: true, desc: "<p>The <code>user_id</code> parameter is a string, from 1 to 100 characters, which is used to identify the user. In most cases, this would by the <code>id</code> of your user. From Authen's point of view, it is an opaque value.</p>"},
+			{name: 'status', type: 'int', required: true, desc: "<p>An integer which maps to your login events. For example, <code>1</code> could be successful, <code>2</code> could mean invalid password, <code>3</code> could mean invalid TOTP code, etc.</p>"},
+			{name: 'payload', type: 'any', required: false, desc: "<p>Arbitrary data to associate with the login log. This data will be returned when listing the login logs. This can be omitted/null.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		{% response [
+			{name: 'id', type: 'uuid', desc: "<p>The id of the created log.</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl -X POST "http://127.0.0.1:5200/v1/login_logs" \
+	-H "Content-Type: application/json" \
+	-d '{
+	"user_id": "d65d8f1a-4380-45e0-bfd3-819ddb4504df",
+	"status": 1,
+	"payload": {"from": "reset_passwrod"}
+}'
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{"id":"4cf3670b-0d3b-4d98-b0d4-ac4ff42f445a"}
+{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{% errors [codes.lookup(102012), codes.lookup(102013)] %}
+		{%- include './_errors.njk' %}
+	</div>
+</div>
+
+<a class=section name=list></a>
+<h2>List</h2>
+<p>Returns the login logs for a user.</p>
+
+<div class="tabs endpoint">
+	<code>GET /v1/login_logs</code>
+	<ul>
+		<li data-tab=param class=active>Paramaters
+		<li data-tab=res>Response
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=sample_res>Sample Response
+		<li data-tab=errors>Errors
+	</ul>
+	<div data-tab=param>
+		{% parameters [
+			{name: 'user_id', type: 'string [1..100]', required: true, desc: "<p>The <code>user_id</code> parameter is a string, from 1 to 100 characters, which is used to identify the user. In most cases, this would by the <code>id</code> of your user. From Authen's point of view, it is an opaque value.</p>"},
+			{name: 'page', type: 'int[1..]', required: false, desc: "<p>Fetch the specified page. Defaults to <code>1</code>.</p>"},
+			{name: 'perpage', type: 'int[1..]', required: false, desc: "<p>Fetch the specified number of records per page. Defaults to <code>100</code>.</p>"}
+		] %}
+	</div>
+	<div data-tab=res>
+		{% response [
+			{name: 'id', type: 'uuid', desc: "<p>The id of the login log.</p>"},
+			{name: 'status', type: 'int', desc: "<p>The status associated with the login log when it was created.</p>"},
+			{name: 'created', type: 'datetime', desc: "<p>RFC 3339 time that login log was created.</p>"},
+			{name: 'payload', type: 'any', desc: "<p>The data, if any, associated with the login log when it was created.</p>"}
+		] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl "http://127.0.0.1:5200/v1/login_logs?"\
+  "user_id=d65d8f1a-4380-45e0-bfd3-819ddb4504df"\
+  "&perpage=10&page=1"
+		{% endhighlight %}
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{
+  "results":
+  [
+    {
+      "id": "4cf3670b-0d3b-4d98-b0d4-ac4ff42f445a",
+      "status": 1,
+      "payload":{"from": "reset_passwrod"},
+      "created": "2022-11-08T09:52:50.366285+00:00"
+    }
+  ]
+}
+{% endhighlight %}
+	</div>
+	<div data-tab=errors>
+		{%- include './_errors.njk' %}
+	</div>
+</div>

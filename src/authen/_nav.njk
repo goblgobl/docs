@@ -27,6 +27,13 @@
 			<li><a href=#delete>Delete</a>
 		</ul>
 	{% endif %}
+	<li><a href={{ env.baseURL }}/authen/login_log>Login Log</a>
+	{%- if page.url == '/authen/login_log/' %}
+		<ul>
+			<li><a href=#create>Create</a>
+			<li><a href=#list>List</a>
+		</ul>
+	{% endif %}
 	<li><a href={{ env.baseURL }}/authen/misc>Misc</a>
 	{%- if page.url == '/authen/misc/' %}
 		<ul>
