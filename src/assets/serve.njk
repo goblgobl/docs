@@ -1,0 +1,40 @@
+---
+layout: main.njk
+title: Assets Proxy API
+section: assets
+---
+<h1>Asset Proxy API</h1>
+<p>Any request made with a path prefix of <code>/v1/</code> will be proxies (or served from the local cache) to the upstream specified by the <strong>required</strong> <code>up</code> querystring parameter.</p>
+
+
+<div class="tabs endpoint">
+  <code>GET /v1/*</code>
+  <ul>
+    <li data-tab=param class=active>Paramaters
+    <li data-tab=res>Response
+    <li data-tab=sample_req>Sample Request
+    <li data-tab=sample_res>Sample Response
+    <li data-tab=errors>Errors
+  </ul>
+  <div data-tab=param>
+    {% parameters [
+      {name: 'up', type: 'string [1..100]', required: true, desc: "<p>The upstream to use as configured in the configuration file <code>upstreams</code>."},
+      {name: 'xform', type: 'string [1..100]', required: false, desc: "<p>The transformation to use as configured for the specified upstream in the configuration file. This parameter is only meaningful when the upstream resource is a png, webp, jpg or gif.</p>"}
+    ] %}
+  </div>
+  <div data-tab=res>
+    <p>Depends on the upstream's response</p>
+  </div>
+  <div data-tab=sample_req>
+    {% highlight "bash" %}
+curl "http://127.0.0.1:5300/v1/logo.png?up=main&xform"
+    {% endhighlight %}
+  </div>
+  <div data-tab=sample_res>
+    <p><img src=https://www.goblgobl.com/docs/favicon.png></p>
+  </div>
+  <div data-tab=errors>
+    {% errors [codes.lookup(202003), codes.lookup(202004), codes.lookup(202005)] %}
+    {%- include './_errors.njk' %}
+  </div>
+</div>

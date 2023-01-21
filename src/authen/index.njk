@@ -33,7 +33,7 @@ make build
 
 <a class=section name=config></a>
 <h2>Configuration</h2>
-<p>By default, configuration will be loaded from the <code>config.json</code> file. This can be changed by specifying the <code>-config PATH</code> argument on startup.</p>
+<p>By default, the configuration will be loaded from the <code>config.json</code> file. This can be changed by specifying the <code>-config PATH</code> argument on startup.</p>
 
 {% code %}
 ```json:basic
@@ -57,6 +57,7 @@ make build
 
   "log": {
     "level": "info",
+    "requests": true,
     "pool_size": 100,
     "format": "kv",
     "kv": {
@@ -98,6 +99,10 @@ make build
 <h4><code>log.level</code></h4>
 <p>The log level to use. Can one one of <code>INFO</code>, <code>WARN</code>, <code>ERROR</code>, <code>FATAL</code> or <code>NONE</code>. Defaults to <code>INFO</code>.</p>
 
+<a name=config_log_requests></a>
+<h4><code>log.requests</code></h4>
+<p>HTTP requests are logged regardless of the configured <code>log.level</code>. Set this value to <code>false</code> if you do not want HTTP requests to be logged. Defaults to <code>true</code>, which will log HTTP requests.</p>
+
 <a name=config_http_listen></a>
 <h4><code>http.listen</code></h4>
 <p>The <code>address:port</code> that the HTTP should listen on. Please note that Authen is not designed to be exposed publicly. The specified address should not be publicly reachable. Defaults to <code>127.0.0.1:5200</code>.</p>
@@ -127,13 +132,13 @@ make build
 <h3 class=section>Advanced Configuration Settings</h3>
 <a name=config_instance_id></a>
 <h4><code>instance_id</code></h4>
-<p>This value should only be set when multiple instances of Authen are deployed. It defaults to <code>0</code>, which is fine when a single instance of Authen is used.</p>
+<p>This value should only be set when multiple instances of Authen are deployed. It defaults to <code>0</code>, which is fine when a single instance is used.</p>
 
-<p>Every request is assigned a <code>RequestId</code>, which is included in any logs generated with respect to the request, as well as placed in the <code>RequestId</code> header of the response. While the code>RequestId</code> isn't guaranteed to be unique, in deployments using multiple instances of Authen, giving each instance a unique id (from 0-255) will greatly reduce duplicates.</p>
+<p>Every request is assigned a <code>RequestId</code>, which is included in any logs generated with respect to the request, as well as placed in the <code>RequestId</code> header of the response. While the <code>RequestId</code> isn't guaranteed to be unique, in deployments using multiple instances, giving each instance a unique id (from 0-255) will greatly reduce duplicates.</p>
 
 <a name=config_multi_tenancy></a>
 <h4><code>multi_tenancy</code></h4>
-<p>See the <a href="#multi_tenancy">multi-tenancy section</a> for more details. In short, when <code>true</code>, each tenant (called a project) is loaded from the database based on the <code>Gobl-Project</code> request header. Some of the configuration settings listed here are ignored in favor of project-specific configuration (stored along the project in the database).</p>
+<p>See the <a href="#multi_tenancy">multi-tenancy section</a> for more details. In short, when <code>true</code>, each tenant (called a project) is loaded from the database based on the <code>Project</code> request header. Some of the configuration settings listed here are ignored in favor of project-specific configuration (stored along the project in the database).</p>
 
 <a name=config_project_update_frequency></a>
 <h4><code>project_update_frequency</code></h4>
@@ -217,7 +222,7 @@ make build
 
 <a class=section name=errors></a>
 <h2>Errors and Codes</h2>
-<p>Authen tries to provide developer-friendly error and validation messages. Every error response has an integer <code>code</code> field which identifies the error. Every error response also has a string <code>error</code> field which is a description of the error, in English. While basic and aimed at guiding developers, the <code>error</code> field will never contain sensitive data and can shown to end-users (although, again, it's rather basic, might be a little technical, and is always in English).</p>
+<p>Authen tries to provide developer-friendly error and validation messages. Every error response has an integer <code>code</code> field which identifies the error. Every error response also has a string <code>error</code> field which is a description of the error, in English. While basic and aimed at guiding developers, the <code>error</code> field will never contain sensitive data and can be shown to end-users (although, again, it's rather basic, might be a little technical, and is always in English).</p>
 
 <p>For example, a request to an invalid route would return a response with a 404 status code, as well as body with a <code>code</code> and <code>error</code> field: </p>
 
@@ -277,11 +282,11 @@ $ curl -X POST "http://127.0.0.1:5200/v1/totp" \
 
 <a class=section name=multi_tenancy></a>
 <h2>Multi-Tenancy</h2>
-<p>Authen supports multi-tenancy largely by way of <code>project_id</code> uuid columns in the database. When multi-tenancy is enabled, the project is identified via the <code>Gobl-Project</code> header.<p>
+<p>Authen supports multi-tenancy largely by way of <code>project_id</code> uuid columns in the database. When multi-tenancy is enabled, the project is identified via the <code>Project</code> header.<p>
 
 <p>To enable multi-tenancy, the <a href=#config_multi_tenancy><code>multi_tenancy</code></a> configuration parameter must be set to <code>true.</code>
 
-<p class=warning>Even with multi-tenancy enabled, Authen does not do authentication. The <code>Gobl-Project</code> header parameter becomes required, and an invalid or unknown id will result in an error, but it is up to the caller to make sure that the correct id is passed.</p>
+<p class=warning>Even with multi-tenancy enabled, Authen does not do authentication. The <code>Project</code> header parameter becomes required, and an invalid or unknown id will result in an error, but it is up to the caller to make sure that the correct id is passed.</p>
 
 <h3>Project Management</h3>
 <p>There is currently no API to manage projects. However, projects can be added, removed or deleted by modifying the <code>authen_projects</code> table of the configured database.</p>

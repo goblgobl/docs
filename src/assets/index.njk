@@ -1,0 +1,239 @@
+---
+layout: main.njk
+title: Assets
+section: assets
+---
+<h1>Assets</h1>
+<p>Assets is a proxy server for static assets (e.g. css, js, fonts) as well as image resizing (using <a href="https://www.libvips.org/API/current/Using-vipsthumbnail.html">vipsthumbnail</a>). It is a Go executable.</p>
+
+<p>It is open source, easy to install, reliable, secure and performant.</p>
+
+<a class=section name=usage></a>
+<h2>Usage</h2>
+<p>At its simplest, an upstream server is configured, and Assets proxies requests to the upstream and caches the results. Given this simple configuration:</p>
+
+{% highlight "json" %}
+{
+  "upstreams": {
+    "gobl": {
+      "base_url": "https://www.goblgobl.com/docs/"
+    }
+  }
+}
+{% endhighlight %}
+
+<p>Requests made to <code>http://127.0.0.1:5300</code> (Assets's default listening port), can be proxied to <code>goblgobl.com</code> using the <code>up</code> querystring parameter equal to our configured upstream key (i.e. <code>gobl</code>):</p>
+
+{% highlight "bash" %}
+$ curl -s "http://127.0.0.1:5300/v1/css/main.css?up=gobl" | head -n 4
+* {
+  margin: 0;
+  padding: 0;
+}
+{% endhighlight %}
+
+<p>Note that the <code>v1</code> portion of the request path is part of Assets' own structure and is not part of the upstream request. Thus, the above request (<code>/v1/css/main.css</code>) translates to an upstream request to <code>https://www.goblgobl.com/docs/css/main.css</code>.</p>
+
+<p>While proxying static assets with aggressive caching can be valuable on its own, the main value of Assets is to generate thumbnails of images. The first step is to extend our configuration with one of more <code>transforms</code> definitions:</p>
+
+{% highlight "json" %}
+{
+  "upstreams": {
+    "gobl": {
+      "base_url": "https://www.goblgobl.com/docs/"
+      "transforms": {
+        "thumb_100x150": ["--size", "100x150", "-m", "attention"]
+      }
+    }
+  }
+}
+{% endhighlight %}
+
+<p>The key of the transform is specified in the <code>xform</code> querystring parameter. The value is an array of parameters which will be passed to <a href="https://www.libvips.org/API/current/Using-vipsthumbnail.html">vipsthumbnail</a> as-is.</p>
+
+{% highlight "bash" %}
+$ curl -s \
+  "http://127.0.0.1:5300/v1/favicon.png?up=gobl&xform=thumb_100x150" |
+ identify -format '%w %h' -
+100 150
+{% endhighlight %}
+
+<p>Some thumbnail generating proxies allow the client to specify transformation properties (e.g. by passing parameters like <code>width=100&height=150</code> in the querystring). Such APIs can often be exploited to DOS the server.</p>
+
+<a class=section name=running></a>
+<h2>Running</h2>
+<p>Assets is meant to be both easy to run and easy to compile.</p>
+
+<p>You can <a href="https://github.com/goblgobl/assets/releases">grab the latest pre-compiled binary</a>, create a simple <a href=#config>config.json</a> and run it.</p>
+
+<p>To compile the project, you'll need a recent version of Go (1.18+). <a href="https://github.com/goblgobl/assets">Download the source</a> and run:</p>
+
+{% highlight "bash" %}
+wget https://github.com/goblgobl/assets/archive/refs/heads/master.tar.gz
+tar -xzvf master.tar.g
+cd assets-master
+make build
+{% endhighlight %}
+
+<p>To generate an executable named <code>assets</code>.</p>
+
+<a class=section name=auth></a>
+<h2>Authentication</h2>
+<p>Assets provides no authentication or authorization. It is intended to sit in front of a public origin and thus be public itself.</p>
+
+<a class=section name=config></a>
+<h2>Configuration</h2>
+<p>By default, the configuration will be loaded from the <code>config.json</code> file. This can be changed by specifying the <code>-config PATH</code> argument on startup.</p>
+
+{% code %}
+```json:minimal
+{
+  "upstreams": {
+    "gobl": {
+      "base_url": "https://www.goblgobl.com/docs/"
+    }
+  }
+}
+
+```
+
+```json:advance
+{
+  "instance_id": 0,
+  "vipsthumbnail": "/opt/vips/vipsthumbnail",
+  "cache_root": "/opts/assets/cache/",
+
+  "http": {
+    "listen": "127.0.0.1:5200"
+  },
+
+  "upstreams": {
+    "gobl": {
+      "base_url": "https://www.goblgobl.com/docs/",
+      "transforms": {
+        "thumb_100x150": ["--size", "100x150"],
+      },
+      "caching": [
+        {"status": 0, "ttl": 300},
+        {"status": 404, "ttl": -60},
+        {"status": 200, "ttl": 3600}
+      ],
+      "buffers": {
+        "count": 100,
+        "min": 131072,
+        "max": 1048576
+      }
+    }
+  },
+
+  "log": {
+    "level": "info",
+    "requests": true,
+    "pool_size": 100,
+    "format": "kv",
+    "kv": {
+      "max_size": 4096
+    }
+  }
+}
+```
+{% endcode %}
+
+<h3 class=section>Common Configuration Settings</h3>
+<a name=config_log_level></a>
+<h4><code>log.level</code></h4>
+<p>The log level to use. Can one one of <code>INFO</code>, <code>WARN</code>, <code>ERROR</code>, <code>FATAL</code> or <code>NONE</code>. Defaults to <code>INFO</code>.</p>
+
+<a name=config_log_requests></a>
+<h4><code>log.requests</code></h4>
+<p>HTTP requests are logged regardless of the configured <code>log.level</code>. Set this value to <code>false</code> if you do not want HTTP requests to be logged. Defaults to <code>true</code>, which will log HTTP requests.</p>
+
+<a name=config_http_listen></a>
+<h4><code>http.listen</code></h4>
+<p>The <code>address:port</code> that the HTTP should listen on. Defaults to <code>127.0.0.1:5300</code>.</p>
+
+<a name=config_vipsthumbnail></a>
+<h4><code>vipsthumbnail</code></h4>
+<p>The full path to the <a href="https://www.libvips.org/API/current/Using-vipsthumbnail.html">vipsthumbnail</a> executable. When not specified, the program will attempt to find it (either in the current working directory, or using the OS's path lookup convention).</p>
+
+<a name=config_cache_root></a>
+<h4><code>cache_root</code></h4>
+<p>The root folder where cached content should be stored. The folder will be created if it does not already exists. Defaults to a folder named <code>cache</code> in the working directory. </p>
+
+<a name=config_upstreams_base_url></a>
+<h4><code>upstreams.NAME.base_url</code></h4>
+<p>Assets must be configured with at least 1 upstream server, and this configuration must include a <code>base_url</code> field. Given a <code>base_url</code> of <code>https://www.goblgobl.com/docs/</code>, a request made to <code>http://assets.host/v1/main.css</code> would look for resource at <code>https://www.goblgobl.com/docs/main.css</code>. Note that the <code>v1</code> is stripped out, as this is a Assets versioning.</p>
+
+<p class=warning>This setting is required and there is no default.</p>
+
+<a name=config_upstreams_transforms></a>
+<h4><code>upstreams.NAME.transforms</code></h4>
+<p>Defines supported image transformation arguments. For example, if a <code>"thumbs_100x150": ["--size", "100x150"]</code> is specified, clients can request an image using the <code>xform=thumbs_100x150</code> query parameter to have a the server generate a 100x150 thumbnail. The string array is passed to vipsthumbnail as-is. While it's tempting to have clients specify their desired transformation arguments, this can lead to DOS attacks.</p>
+
+<a name=config_upstreams_buffers_max></a>
+<h4><code>upstreams.NAME.buffers.max</code></h4>
+<p>Defines the maximum size of a non-image resource will be accepted from an upstream. This setting does not pre-allocate memory (unlike <a href=#config_upstreams_buffers_min>min</a>), so it's generally safe to set quite large. As images are saved directly to disk, no internal buffer is used and thus no limit is enforced. Defaults to 5242880 (5MB).</p>
+
+<h3 class=section>Advanced Configuration Settings</h3>
+<a name=config_instance_id></a>
+<h4><code>instance_id</code></h4>
+<p>This value should only be set when multiple instances of Assets are deployed. It defaults to <code>0</code>, which is fine when a single instance is used.</p>
+
+<p>Every request is assigned a <code>RequestId</code>, which is included in any logs generated with respect to the request, as well as placed in the <code>RequestId</code> header of the response. While the <code>RequestId</code> isn't guaranteed to be unique, in deployments using multiple instances, giving each instance a unique id (from 0-255) will greatly reduce duplicates.</p>
+
+<a name=config_upstreams_caching></a>
+<h4><code>upstreams.NAME.caching</code></h4>
+<p>By default, Assets will locally cache upstream responses (or transformed images) based on the upstream's <code>max-age</code> value of the <code>Cache-Control</code> header. This behavior can be tweaked based on the status code by providing an array of <code>{"status": CODE, "ttl": INT}</code> values. The <code>ttl</code> is in seconds. A negative <code>ttl</code> will ignore the upstream <code>Cache-Control</code> header and cache for positive <code>ttl</code> seconds. A positive <code>ttl</code> will use the <code>Cache-Control</code> value and fallback to the provide <code>ttl</code> if the <code>Cache-Control</code> is missing or invalid. The special <code>status</code> of <code>0</code> is used as a fallback. The default is: </p>
+
+{% highlight "json" %}
+{"status": 0, "ttl": 300},
+{"status": 404, "ttl": -60},
+{"status": 200, "ttl": 3600}
+{% endhighlight %}
+
+<p>Which means that, 404s are always cached locally for 60 seconds. 200s are cached based on the <code>Cache-Control</code> header. If this header is missing or invalid, 200s are cached for 1 hour. All other responses are cached based on <code>Cache-Control</code> header or 5 minutes if the header is missing or invalid.</p>
+
+<a name=config_upstreams_buffers_count></a>
+<h4><code>upstreams.NAME.buffers.count</code></h4>
+<p>Every upstream keeps a pool of buffers for reading and processing responses. The <code>count</code> parameter defines how many buffers each upstream should keep cached. <a href=#config_upstreams_buffers_min>min</a> * <a href=#config_upstreams_buffers_count>count</a> bytes are allocated on startup. This defaults to <code>10</code>.</p>
+
+<a name=config_upstreams_buffers_min></a>
+<h4><code>upstreams.NAME.buffers.min</code></h4>
+<p>Every upstream keeps a pool of buffers for reading and processing responses. The <code>min</code> parameter defines the minimum size of each buffer. This cannot be less than <code>255</code>. <a href=#config_upstreams_buffers_min>min</a> * <a href=#config_upstreams_buffers_count>count</a> bytes are allocated on startup. This defaults to <code>131072</code> (or 128KB).</p>
+
+<p class=warning>How and when buffers are used is an implementation detail. However, they are currently mostly used when reading responses from upstream servers for non-images. Thus, given long cache values, they are not critical for high performance.</p>
+
+<a name=config_log_pool_size></a>
+<h4><code>log.pool_size</code></h4>
+<p>Assets pre-allocates a pool of loggers which helps reduce the amount of memory that is created and which must be garbage collected during runtime. The amount of pre-allocated memory depends on the pool_size and the <a href="#config_log_kv_max_size">configured maximum log size</a>.</p>
+
+<p>For best performance, at the cost of memory, this should be set to the maximum number of concurrent requests the system will handle. It defaults to <code>100</code>.</p>
+
+<p class=warning>The log pool will not grow or shrink and is non-blocking. If more loggers are requested than the pool can handle, loggers will be dynamically allocated, but will not be added back to the pool.</p>
+
+<a name=config_log_format></a>
+<h4><code>log.format</code></h4>
+<p>The format of the generated log messages. Currently, the only supported value, and the default, is <code>kv</code> for a key=value type log output.</p>
+
+<a name=config_log_kv_max_size></a>
+<h4><code>log.kv.max_size</code></h4>
+<p>The maximum size of an individual log message. Any additional data will be discarded. Defaults to <code>4096</code>. With a default <a href=#config_log_pool_size>pool_size</a> of <code>100</code>, the total memory pre-allocated for logging is <code>100 * 4096</code> bytes (0.4096 megabytes).</p>
+
+<a class=section name=errors></a>
+<h2>Errors and Codes</h2>
+<p>Assets tries to provide developer-friendly error and validation messages. Every error response has an integer <code>code</code> field which identifies the error. Every error response also has a string <code>error</code> field which is a description of the error, in English. While basic and aimed at guiding developers, the <code>error</code> field will never contain sensitive data and can be shown to end-users (although, again, it's rather basic, might be a little technical, and is always in English).</p>
+
+<p>For example, a request to an invalid route would return a response with a 404 status code, as well as body with a <code>code</code> and <code>error</code> field: </p>
+
+{% highlight "bash" %}
+$ curl http://127.0.0.1:5300/invalid
+
+{
+  "code": 202001,
+  "error": "not found"
+}
+{% endhighlight %}
+
+<a class=section name=errors_codes></a>
+<h3>Error Codes</h3>
+{% errors codes.http.concat(codes.assets.http) %}

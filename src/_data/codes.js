@@ -17,13 +17,29 @@ const validation = [
 	{code: 1007, desc: "<p>The integer must be less than or equal than <code>max</code>.</p>"},
 	{code: 1008, desc: "<p>The integer must be greater or equal than <code>min</code> and less than or equal than <code>max</code>.</p>"},
 	{code: 1009, desc: "<p>The value must be a boolean.</p>"},
+	{code: 1010, desc: "<p>The value must be a uuid.</p>"},
 ];
+
+const assets = {
+	http: [
+		{code: 202001, desc: "<p>Not found. Specifically relates to the path in the URL.</p>"},
+		{code: 202002, desc: "<p><code>up</code> querystring parameter is missing.</p>"},
+		{code: 202003, desc: "<p><code>up</code> querystring parameter is invalid (does not match a configured upstream name).</p>"},
+		{code: 202004, desc: `<p><code>xform</code> querystring parameter is invalid (not not match a configured transformation for the specified upstream).</p>`},
+		{code: 202005, desc: "<p>Upstream resource not found. For protection against denial of service (DOS) attacks, Assets will not cache the entire entire response of a 404. Instead it returns this simple error.</p>"}
+
+	],
+	validation: [
+		{code: 201001, desc: "<p>The <code>key</code> parameter was not a valid HEX-encoded value.</p>"},
+		{code: 201002, desc: "<p>The <code>ticket</code> parameter was not a valid Base64-encoded value.</p>"}
+	]
+};
 
 const authen = {
 	http: [
 		{code: 102001, desc: "<p>Not found. Specifically relates to the path in the URL.</p>"},
-		{code: 102002, desc: "<p><code>Gobl-Project</code> header is missing. Only applicable when multi-tenancy is enabled.</p>"},
-		{code: 102003, desc: "<p>The id specified by the <code>Gobl-Project</code> header was not valid. Only applicable when multi-tenancy is enabled.</p>"},
+		{code: 102002, desc: "<p><code>Project</code> header is missing. Only applicable when multi-tenancy is enabled.</p>"},
+		{code: 102003, desc: "<p>The id specified by the <code>Project</code> header was not valid. Only applicable when multi-tenancy is enabled.</p>"},
 		{code: 102005, desc: `<p>The project has reached the <a href=${env.baseURL}/authen/#config_totp_max>maximum configured TOTP</a> entries.</p>`},
 		{code: 102006, desc: "<p>The TOTP entry could not be found. This means the <code>user_id</code> or optionally <code>user_id + type</code> did not correspond to an existing TOTP (or <code>project_id + user_id + type</code> when multi-tenancy is enabled). Note that TOTP that are setup but not confirmed before the <a href=#config_totp_setup_ttl>configured TTL</a> are periodically deleted.</p>"},
 		{code: 102007, desc: "<p>The <code>key</code> parameter to decrypt/encrypt the TOTP secret was incorrect.</p>"},
@@ -41,11 +57,10 @@ const authen = {
 	]
 };
 
-const all = {http, authen, validation};
+const all = {http, assets, authen, validation};
 const lookup = buildLookup(all, {});
 all.lookup = function(id) { return lookup[id]; };
 module.exports = all;
-
 
 function buildLookup(container, lookup) {
 	if (Array.isArray(container)) {
