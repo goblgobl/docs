@@ -1,5 +1,5 @@
 #nav {
-	top: 75px;
+	top: 55px;
 	width: 220px;
 	position: fixed;
 	h3 {
@@ -17,20 +17,17 @@
 	a {
 		color: #444;
 		display: block;
-		padding: 6px 0;
+		padding: 8px 0;
 		padding-left: 100%;
 		margin-left: -100%;
-		border-width: 1px;
-		border-color: transparent;
 		&:hover {
 			text-decoration: none;
 		}
 	}
 
 	li a:hover {
-		background: #f0f0f0;
-		border-color: #ddd;
-
+		color: #fff;
+		background: #ff79c6;
 	}
 }
 

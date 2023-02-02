@@ -4,6 +4,7 @@ const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 
 module.exports = function(config) {
 	config.addPassthroughCopy('src/docs.js');
+	config.addPassthroughCopy('src/font.woff2');
 	config.addPassthroughCopy('src/logo.png');
 	config.addPassthroughCopy('src/favicon.png');
 	config.addPassthroughCopy('src/assets/tests/*');
