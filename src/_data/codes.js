@@ -22,7 +22,7 @@ const validation = [
 
 const assets = {
 	http: [
-		{code: 202001, desc: "<p>Not found. Specifically relates to the path in the URL.</p>"},
+		{code: 202001, desc: "<p>An http 404 that secifically relates to the URL path being unknown (as opposed to, say, an endpoint returning a 404 because some ID wasn't valid).</p>"},
 		{code: 202002, desc: "<p><code>up</code> querystring parameter is missing.</p>"},
 		{code: 202003, desc: "<p><code>up</code> querystring parameter is invalid (does not match a configured upstream name).</p>"},
 		{code: 202004, desc: `<p><code>xform</code> querystring parameter is invalid (not not match a configured transformation for the specified upstream).</p>`},
@@ -37,7 +37,7 @@ const assets = {
 
 const authen = {
 	http: [
-		{code: 102001, desc: "<p>Not found. Specifically relates to the path in the URL.</p>"},
+		{code: 102001, desc: "<p>An http 404 that secifically relates to the URL path being unknown (as opposed to, say, an endpoint returning a 404 because some ID wasn't valid).</p>"},
 		{code: 102002, desc: "<p><code>Project</code> header is missing. Only applicable when multi-tenancy is enabled.</p>"},
 		{code: 102003, desc: "<p>The id specified by the <code>Project</code> header was not valid. Only applicable when multi-tenancy is enabled.</p>"},
 		{code: 102005, desc: `<p>The project has reached the <a href=${env.baseURL}/authen/#config_totp_max>maximum configured TOTP</a> entries.</p>`},

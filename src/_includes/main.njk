@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <meta name=viewport content="width=device-width">
+<style>
+@font-face {
+	font-family: 'ds';
+	font-display: fallback;
+	src: url('{{ env.baseURL }}/font.woff2') format('woff2');
+}
+body{font-family: 'ds', sans-serif;}
+</style>
 <link href={{ env.baseURL }}/css/main.css rel=stylesheet>
 <title>{{ title }} | GoblGobl Docs</title>
 <link rel=icon type="image/png" href="{{ env.baseURL }}/favicon.png">
