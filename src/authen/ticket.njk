@@ -8,7 +8,7 @@ section: authen
 
 <p>A common use-case for tickets is to transfer data from one system to another. This can be used, for example, as a form of single sign-on. A logged in client makes a transfer request to System A. System A generates and returns a ticket to the client. This ticket is only valid for 30 seconds and only for a single use; it's associated with the <code>user_id</code>. The client then sends the ticket to System B. As long as System B trusts System A, it can be sure that the owner of the ticket is the <code>user_id</code> associated with the ticket.</p>
 
-<p>Tickets have advantages and disadvantages over alternative approaches, such as transfering encrypted and/or signed data via the client. The main advantage is that revocation and usage limits are first class features.</p>
+<p>Tickets have advantages and disadvantages over alternative approaches, such as transferring encrypted and/or signed data via the client. The main advantage is that revocation and usage limits are first class features.</p>
 
 <a class=section name=create></a>
 <h2>Create</h2>
@@ -17,7 +17,7 @@ section: authen
 <div class="tabs endpoint">
 	<code>POST /v1/totps</code>
 	<ul>
-		<li data-tab=param class=active>Paramaters
+		<li data-tab=param class=active>Parameters
 		<li data-tab=res>Response
 		<li data-tab=sample_req>Sample Request
 		<li data-tab=sample_res>Sample Response
@@ -32,7 +32,7 @@ section: authen
 	</div>
 	<div data-tab=res>
 		{% response [
-			{name: 'ticket', type: 'string', desc: "<p>The ticket (this is a base64 encoded opaque value, but callers shoudl not assume anything about this value except that it's a non-empty string).</p>"}
+			{name: 'ticket', type: 'string', desc: "<p>The ticket (this is a base64 encoded opaque value, but callers should not assume anything about this value except that it's a non-empty string).</p>"}
 		] %}
 	</div>
 	<div data-tab=sample_req>
@@ -64,7 +64,7 @@ curl -X POST "http://127.0.0.1:5200/v1/tickets" \
 <div class="tabs endpoint">
 	<code>POST /v1/totps/uses</code>
 	<ul>
-		<li data-tab=param class=active>Paramaters
+		<li data-tab=param class=active>Parameters
 		<li data-tab=res>Response
 		<li data-tab=sample_req>Sample Request
 		<li data-tab=sample_res>Sample Response
@@ -110,7 +110,7 @@ curl -X POST "http://127.0.0.1:5200/v1/tickets/use" \
 <div class="tabs endpoint">
 	<code>POST /v1/totps/delete</code>
 	<ul>
-		<li data-tab=param class=active>Paramaters
+		<li data-tab=param class=active>Parameters
 		<li data-tab=res>Response
 		<li data-tab=sample_req>Sample Request
 		<li data-tab=sample_res>Sample Response
@@ -124,7 +124,7 @@ curl -X POST "http://127.0.0.1:5200/v1/tickets/use" \
 	<div data-tab=res>
 		{% response [
 			{name: 'uses', type: 'int', desc: "<p>The number of uses left. Null for a ticket with unlimited use.</p>"},
-			{name: 'deletes', type: 'int', desc: "<p>The number of deleted tickets (currentlt must be either 0 or 1).</p>"}
+			{name: 'deletes', type: 'int', desc: "<p>The number of deleted tickets (currently must be either 0 or 1).</p>"}
 		] %}
 	</div>
 	<div data-tab=sample_req>

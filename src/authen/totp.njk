@@ -84,7 +84,7 @@ crypto.scrypt(password, salt, 32, (err, key) => {
 <div class="tabs endpoint">
 	<code>POST /v1/totps</code>
 	<ul>
-		<li data-tab=param class=active>Paramaters
+		<li data-tab=param class=active>Parameters
 		<li data-tab=res>Response
 		<li data-tab=sample_req>Sample Request
 		<li data-tab=sample_res>Sample Response
@@ -131,14 +131,14 @@ curl -X POST "http://127.0.0.1:5200/v1/totp" \
 
 <a class=section name=verify></a>
 <h2>Verify Code</h2>
-<p>Verifie the user's TOTP code. This has two modes, based on the <code>pending</code> parameter. When <code>true</code>, the recently generated secret (via the <code>POST /v1/totps</code> endpoint), is being confirmed. When <code>false</code> (the default), an already confirmed code is being verified.</p>
+<p>Verify the user's TOTP code. This has two modes, based on the <code>pending</code> parameter. When <code>true</code>, the recently generated secret (via the <code>POST /v1/totps</code> endpoint), is being confirmed. When <code>false</code> (the default), an already confirmed code is being verified.</p>
 
 <p>Put differently, setting up a new code (or changing an existing one), is a two step process where first the secret is generated and then verified with <code>pending: true</code>. Subsequent verification, say on user login, is done by calling verify with <code>pending: false</code> (or omitted).</p>
 
 <div class="tabs endpoint">
 	<code>POST /v1/totps/verify</code>
 	<ul>
-		<li data-tab=param class=active>Paramaters
+		<li data-tab=param class=active>Parameters
 		<li data-tab=res>Response
 		<li data-tab=sample_req>Sample Request
 		<li data-tab=errors>Errors
@@ -183,7 +183,7 @@ curl -X POST "http://127.0.0.1:5200/v1/totp/verify" \
 <div class="tabs endpoint">
 	<code>POST /v1/totps/delete</code>
 	<ul>
-		<li data-tab=param class=active>Paramaters
+		<li data-tab=param class=active>Parameters
 		<li data-tab=res>Response
 		<li data-tab=sample_req>Sample Request
 		<li data-tab=sample_res>Sample Response
@@ -230,7 +230,7 @@ curl -X POST "http://127.0.0.1:5200/v1/totp/delete" \
 <div class="tabs endpoint">
 	<code>POST /v1/totps/change_key</code>
 	<ul>
-		<li data-tab=param class=active>Paramaters
+		<li data-tab=param class=active>Parameters
 		<li data-tab=res>Response
 		<li data-tab=sample_req>Sample Request
 		<li data-tab=errors>Errors

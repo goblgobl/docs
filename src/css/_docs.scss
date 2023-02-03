@@ -142,9 +142,19 @@ table {
 	div.endpoint {
 		overflow: scroll;
 	}
+	p code {
+		overflow-wrap: anywhere;
+	}
 	div.tabs {
 		& > div {
 			overflow: scroll;
+		}
+		li {
+			width: 100%;
+			border-right-width: 1px;
+		}
+		li.active{
+			border-bottom-color: #ddd;
 		}
 	}
 }
