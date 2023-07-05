@@ -1,0 +1,210 @@
+---
+layout: docs.njk
+title: duckdb-proxy
+section: duckdb-proxy
+---
+
+<h1>duckdb-proxy</h1>
+<p>duckdb-proxy is a proxy for accessing DuckDB over HTTP. It exposes very simple and powerful endpoints that allow arbitrary execution of SQL statements and returns JSON results.</p>
+
+<p class=warning>Because of DuckDB's flexibility, (i.e. it's ability to directly query files on the filesystem), this proxy should not exposed directly to untrusted users.</p>
+
+<h3 class=section>Usage</h3>
+<a name=usage></a>
+<p>Download duckdb-proxy from the <a href="https://github.com/pondzdev/duckdb-proxy/releases">project release page</a>.</p>
+
+<p>duckdb-proxy is configured via command line arguments</p>
+
+{% highlight "bash" %}
+# can be run without any arguments, will open/create a "db.duckdb" file
+$ ./duckdb-proxy
+
+
+# can be given a path to an existing DuckDB database
+# (the DB is created if it doesn't exist, but the directory must already exist)
+$ ./duckdb-proxy db/mydatabase.duckdb
+
+
+# open the database in readonly (DB must exist in this case)
+$ ./duckdb-proxy --readonly db/mydatabase.duckdb
+{% endhighlight %}
+
+<p>You can quickly test the proxy:</p>
+
+{% highlight "bash" %}
+$ curl http://localhost:8012/api/1/exec \
+	 -d '{"sql": "select version()"}'
+{
+ "cols": ["version()"],
+ "rows": [
+	 ["v0.8.1"]
+ ]
+{% endhighlight %}
+
+<h3 class=section>Configuration</h3>
+<a name=config></a>
+
+<h4><code>--help</code></h4>
+<p>Print help message and exit</p>
+
+<a name=config_port></a>
+<h4><code>--port PORT</code></h4>
+<p>The port for the HTTP server to listen on. default: 8012</p>
+
+<h4><code>--address ADDRESS</code></h4>
+<p>The address for the HTTP server to listen on. default: 127.0.0.1</p>
+
+<h4><code>--readonly</code></h4>
+<p>Opens the database in readonly mode (using the DuckDB <code>access_mode=read_only</code> configuration). When set, consider also setting <code>--with_wrap</code>.</p>
+
+<h4><code>--with_wrap</code></h4>
+<p>When set, duckdb-proxy will wrap the provided SQL in a CTE: <code>with _dproxy as ($SQL) select * from _proxy</code>. This will help limit the type of statements that duckdb-proxy will allow. When set, consider also setting <code>--readonly</code>.</p>
+
+<h4><code>--max_limit N</code></h4>
+<p>When set, <code>--with-wrap</code> is automatically enabled, and the wrapping SQL will include a <code>limit N</code>, ensure that no more than N rows are returned.</p>
+
+<h4><code>--external_access</code></h4>
+<p>Allows the database to access external state (using the DuckDB <code>enable_external_access=BOOL</code> configuration</p>
+
+<h4><code>--pool_size COUNT</code></h4>
+<p>The number of connections to the DB duckdb-proxy should keep alive. default: 50</p>
+
+<h4><code>--max_params COUNT</code></h4>
+<p>For a given call to <code>/api/1/exec</code> the maximum number of value that can be passed into <code>params</code>. default: no limit</p>
+
+<h4><code>--cors_origin ORIGIN</code></h4>
+<p>When set, duckdb-proxy will respond to CORS request using the specified origin (as well as any other CORS headers needed for duckdb-proxy to work). default none</p>
+
+<h4><code>--max_request_size BYTES</code></h4>
+<p>Will return an HTTP error if the request body is > BYTES. default: 65536</p>
+
+<h4><code>--log_level info | warn | error | fatal | none</code></h4>
+<p>The log level to write to use (duckdb-proxy is not overly verbose). default: info</p>
+
+<a name=config_log_http></a>
+<h4><code>--log_http</code></h4>
+<p>Enable logging HTTP requests (1 log per non-404 request)</p>
+
+<h3 class=section>Supported Types</h3>
+<a name=types></a>
+<p>duckdb-proxy is written in <a href=http://ziglang.org>Zig</a> and uses the DuckDB C API. The C API is missing support for binding and reading a few types. These types can still be used in the SQL query itself, but cannot be passed-in as parameters and/or returned as part of a result.</p>
+
+<ul>
+	<li>JSON has to be passed in as a string and will be returned as a string,
+	<li>Lists/arrays can be returned, but cannot be passed in,
+	<li>No support for structs/maps (TODO: check if this is a limitation of duckdb-proxy or the C API)
+</ul>
+
+<h2 class=section>API</h2>
+<a name=api></a>
+
+<a class=section name=api_exec></a>
+<h2>exec</h2>
+<p>Executes the specified SQL, returning the result as JSON.</p>
+
+<div class="tabs endpoint">
+	<code>POST /api/1/exec</code>
+	<ul>
+		<li data-tab=req class=active>Request Parameters
+		<li data-tab=sample_req>Sample Request
+		<li data-tab=res>Response
+		<li data-tab=sample_res>Sample Response
+	</ul>
+	<div data-tab=req>
+    {% parameters [
+      {name: 'sql', type: 'string', required: true, desc: "<p>The SQL to execute</p>"},
+      {name: 'params', type: 'array', required: false, desc: "<p>The parameters to bind to the SQL statement. Must have a value for each placeholder in the SQL statement.</p>"}
+    ] %}
+	</div>
+	<div data-tab=sample_req>
+		{% highlight "bash" %}
+curl "http://localhost:8012/api/1/exec" -d '{
+  "sql": "select name,value from duckdb_settings() where name like $1",
+  "params": ["debug%"]
+}'
+		{% endhighlight %}
+  }
+	</div>
+	<div data-tab=res>
+    {% response [
+      {name: 'cols', type: 'string array', desc: "<p>List of column names.</p>"},
+      {name: 'rows', type: 'array of arrays', desc: "<p>The result as an array of arrays.</p>"}
+    ] %}
+<p>In the case of an <code>insert</code>, <code>update</code> or <code>delete</code> without a <code>returning</code> clause, a single row with the column <code>Count</code> will be returned, indicating the number of rows inserted, updated or deleted.</p>
+	</div>
+	<div data-tab=sample_res>
+{% highlight "json" %}
+{
+ "cols": ["name","value"],
+ "rows": [
+   ["debug_checkpoint_abort","none"],
+   ["debug_force_external","false"],
+   ["debug_force_no_cross_product","false"],
+   ["debug_asof_iejoin","false"],
+   ["debug_window_mode","NULL"]
+ ]
+}
+{% endhighlight %}
+	</div>
+</div>
+
+<p>As an alternative, <code>POST /api/1/exec/$ID</code> can also be used. This can be useful when <a href=#config_log_http>--log_http</a> is set in order to generate more meaningful access log (since the log's <code>path</code> attribute will contain the URL, including the <code>$ID</code>) .
+
+<h2 class=section>Errors and Codes</h2>
+<a name=errors></a>
+<p>duckdb-proxy tries to provide developer-friendly error and validation messages. Every error response has an integer <code>code</code> field which identifies the error. Every error response also has a <code>err</code> field which is a description of the error, in English.</p>
+
+<p>For example, a request to an invalid route would return a response with a 404 status code, as well as body with a <code>code</code> and <code>err</code> field: </p>
+
+{% highlight "bash" %}
+$ curl http://127.0.0.1:8012/hello
+
+{"code": 2, "err": "not found"}
+{% endhighlight %}
+
+<p>Validation errors follow the same pattern, which each validation type having a distinct code. Validation errors always have a <code>code: 11</code> and a <code>validation</code> field that contains a list of errors. Each error contains a <code>field</code>, <code>code</code>, <code>err</code> and optional <code>data</code>.</p>
+
+<p>For example, the error when a required field is missing looks like:</p>
+
+{% highlight "bash" %}
+$ curl "http://localhost:8012/api/1/exec" -d '{}'
+
+{
+  "code": 11,
+  "err": "validation error",
+  "validation": [
+    {"field": "sql", "code": 1, "err": "is required"}
+  ]
+}
+{% endhighlight %}
+
+<p>The <code>field</code> value is the full path name. For arrays, the element index is part of the <code>field</code>:</p>
+
+{% highlight "bash" %}
+$ curl "http://localhost:8012/api/1/exec" -d '{
+    "sql": "select $1::int",
+    "params": ["hi"]
+}'
+
+{
+  "code": 11,
+  "err": "validation error",
+  "validation": [
+    {"field": "params.0", "code":4, "err": "must be an int"}
+  ]
+}
+{% endhighlight %}
+
+<p>Validation codes <code>100</code> indicates that there was a problem preparing or executing the SQL statement. The <code>err</code> field contains the error provided by DuckDB:</p>
+
+{% highlight "bash" %}
+$ curl "http://localhost:8012/api/1/exec" -d '{"sql": "select * from x"}'
+
+{
+  "code": 11,
+  "err": "validation error",
+  "validation": [
+    {"field": "sql", "code": 100, "err": "Catalog Error: Table with ..."}
+  ]
+}
+{% endhighlight %}

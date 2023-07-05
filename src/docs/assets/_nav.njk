@@ -1,0 +1,21 @@
+<h3>Overview</h3>
+<ul>
+  <li><a href={{ env.baseURL }}/docs/assets/#usage>Usage</a>
+  <li><a href={{ env.baseURL }}/docs/assets/#running>Running</a>
+  <li><a href={{ env.baseURL }}/docs/assets/#auth>Authentication</a>
+  <li><a href={{ env.baseURL }}/docs/assets/#config>Configuration</a>
+  <li><a href={{ env.baseURL }}/docs/assets/#errors>Errors & Codes</a>
+</ul>
+
+<h3>APIS</h3>
+<ul>
+  <li><a href={{ env.baseURL }}/docs/assets/serve>Assets</a>
+  <li><a href={{ env.baseURL }}/docs/assets/misc>Misc</a>
+  {%- if page.url == '/assets/misc/' %}
+    <ul>
+      <li><a href=#ping>Ping</a>
+      <li><a href=#info>Info</a>
+    </ul>
+  {% endif %}
+</ul>
+

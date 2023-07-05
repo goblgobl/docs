@@ -1,15 +1,15 @@
 <h3>Overview</h3>
 <ul>
-	<li><a href={{ env.baseURL }}/authen/#running>Running</a>
-	<li><a href={{ env.baseURL }}/authen/#auth>Authentication</a>
-	<li><a href={{ env.baseURL }}/authen/#config>Configuration</a>
-	<li><a href={{ env.baseURL }}/authen/#errors>Errors & Codes</a>
-	<li><a href={{ env.baseURL }}/authen/#multi_tenancy>Multi-tenancy</a>
+	<li><a href={{ env.baseURL }}/docs/authen/#running>Running</a>
+	<li><a href={{ env.baseURL }}/docs/authen/#auth>Authentication</a>
+	<li><a href={{ env.baseURL }}/docs/authen/#config>Configuration</a>
+	<li><a href={{ env.baseURL }}/docs/authen/#errors>Errors & Codes</a>
+	<li><a href={{ env.baseURL }}/docs/authen/#multi_tenancy>Multi-tenancy</a>
 </ul>
 
 <h3>APIS</h3>
 <ul>
-	<li><a href={{ env.baseURL }}/authen/totp>TOTP</a>
+	<li><a href={{ env.baseURL }}/docs/authen/totp>TOTP</a>
 	{%- if page.url == '/authen/totp/' %}
 		<ul>
 			<li><a href=#parameters>Common Parameters</a>
@@ -19,7 +19,7 @@
 			<li><a href=#change_key>Change Key</a>
 		</ul>
 	{% endif %}
-	<li><a href={{ env.baseURL }}/authen/ticket>Ticket</a>
+	<li><a href={{ env.baseURL }}/docs/authen/ticket>Ticket</a>
 	{%- if page.url == '/authen/ticket/' %}
 		<ul>
 			<li><a href=#create>Create</a>
@@ -27,14 +27,14 @@
 			<li><a href=#delete>Delete</a>
 		</ul>
 	{% endif %}
-	<li><a href={{ env.baseURL }}/authen/login_log>Login Log</a>
+	<li><a href={{ env.baseURL }}/docs/authen/login_log>Login Log</a>
 	{%- if page.url == '/authen/login_log/' %}
 		<ul>
 			<li><a href=#create>Create</a>
 			<li><a href=#list>List</a>
 		</ul>
 	{% endif %}
-	<li><a href={{ env.baseURL }}/authen/misc>Misc</a>
+	<li><a href={{ env.baseURL }}/docs/authen/misc>Misc</a>
 	{%- if page.url == '/authen/misc/' %}
 		<ul>
 			<li><a href=#ping>Ping</a>

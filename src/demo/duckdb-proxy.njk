@@ -1,0 +1,112 @@
+---
+layout: main.njk
+title: duckdb-proxy demo | pondz
+---
+<style>
+h1{margin-bottom: 10px}
+form > div {margin-bottom: 10px;display: flex;flex-direction:column}
+textarea{border:1px solid #ccc;padding:20px;width:100%;}
+main{padding-bottom: 50px;}
+#sql{height:250px}
+#params{height:75px}
+button{padding: 5px 10px;align-self:flex-end;cursor:pointer;box-shadow: 0 0 2px 0 #666;background:#fffdd4;border:1px solid #aaa;border-radius:4px;color:#000}
+button:hover{background:#e6f3ff}
+#result{border: 1px solid #ccc;padding: 20px;margin-top: 20px;overflow:auto}
+#note{margin-top:100px;font-size: 90%;}
+</style>
+<header>
+<ul>
+	<li><a href="{{ env.baseURL }}/">home</a>
+</ul>
+</header>
+
+<main>
+<h1>duckdb-proxy demo</h1>
+<p>Write your SQL (e.g. <code>select * from drives)</code>, enter the necessary parameters and click "run".</p>
+
+<form id=demo>
+	<div>
+		<label for=sql>SQL</label>
+		<textarea name=sql id=sql>
+select model,
+  any_value(manufacturer) as manufacturer,
+  count(*) as drive_count,
+  round(count(*) filter (where failure) * 100 / count(*), 2) as failure_rate
+from drives
+where first_seen >= $1
+group by model
+order by count(*) filter (where failure) * 100 / count(*) desc</textarea>
+	</div>
+	<div>
+		<label for=params>JSON Parameter Array</label>
+		<textarea name=params id=params>["2022-01-01"]</textarea>
+	</div>
+	<div>
+		<button type=submit>run</button>
+	</div>
+</form>
+<pre id=result>Click "run" to execute the SQL and see the result</pre>
+
+<div id=note>
+<h5>Remarks</h5>
+<p>For the purpose of this demo, and because DuckDB is very powerful and dangerous to publically expose, duckdb-proxy was started with the <code>--readonly</code> and <code>--max_limit=500</code> flags. The <code>max_limit</code> flag implies <code>--with_wrap</code> which causes every SQL statement to be wrapped in a CTE.</p>
+
+<p>This single-table demo is based on the <a href=https://www.backblaze.com/b2/hard-drive-test-data.html>Backblaze data dumps</a></p>
+</note>
+</main>
+<script type=text/javascript>
+(() => {
+	const form = document.getElementById('demo');
+	const sql = document.getElementById('sql');
+	const params = document.getElementById('params');
+	const result = document.getElementById('result');
+	sql.focus();
+
+
+	form.addEventListener('submit', function(e) {
+		e.preventDefault();
+
+		let p = [];
+		try {
+			if (params.value.trim() != '') {
+				p = JSON.parse(params.value);
+			}
+		} catch (err) {
+			result.style.display = 'block';
+			result.textContent = `Params is not valid JSON\n${err}`;
+			return;
+		}
+
+		const opts = {
+			method: 'POST',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify({sql: sql.value, params: p}),
+		};
+
+		result.style.display = 'block';
+		result.textContent = "loading..."
+		let status = 0;
+		fetch('/demo/duckdb-proxy/api/1/exec', opts)
+			.then((r) => {
+				status = r.status;
+				return r.text();
+			})
+			.then((body) => {
+				// already sort of formatted
+				if (status === 200) result.textContent = body;
+				else {
+					try {
+						result.textContent = JSON.stringify(JSON.parse(body), null, ' ');
+					} catch {
+						result.textContent = body;
+					}
+				}
+				params.scrollIntoView();
+			})
+			.catch((e) => {
+				result.textContent = e;
+				params.scrollIntoView();
+			});
+	})
+})();
+</script>

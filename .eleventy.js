@@ -2,16 +2,20 @@ const sass = require('sass');
 const pluginSass = require('@grimlink/eleventy-plugin-sass');
 const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 
+const env = require('./src/_data/env.js');
+const package = require('./package.json');
+
 module.exports = function(config) {
-	config.addPassthroughCopy('src/docs.js');
-	config.addPassthroughCopy('src/font.woff2');
-	config.addPassthroughCopy('src/logo.png');
-	config.addPassthroughCopy('src/favicon.png');
-	config.addPassthroughCopy('src/assets/tests/*');
+	config.addPassthroughCopy('src/assets/docs.js');
+	config.addPassthroughCopy('src/assets/favicon.png');
 	config.setTemplateFormats(['html', 'njk']);
 
 	config.addPlugin(syntaxHighlight);
-	config.addPlugin(pluginSass, { sass });
+	config.addPlugin(pluginSass, {
+		sass: sass,
+		outputPath: '/assets/',
+		outputStyle: (env.prod) ? 'compressed' : 'expanded',
+	});
 
 	config.addPairedShortcode('code', function(code) {
 		let tabs = [];
@@ -71,6 +75,10 @@ module.exports = function(config) {
 			html += `<tr><td><code><a name=error_${e.code}></a>${e.code}</code><td>${e.desc}</tr>`;
 		}
 		return html + '</table>';
+	});
+
+	config.addAsyncFilter('asset_url', async function(url) {
+		return env.baseURL + '/assets/' + url + '?v=' + package.version;
 	});
 
 	return {

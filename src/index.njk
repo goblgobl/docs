@@ -1,21 +1,44 @@
 ---
 layout: main.njk
-title: Overview
+title: goblgobl
 ---
-<style>
-body, html, main{height: 100%}
-#altnav{display: none}
-</style>
-<h1>GoblGobl Documentation</h1>
-
-<p>GoblGobl is a collection of open source, focused, reliable and performant systems. They are designed to be easily self-hosted and scalable. While not a hard rule, GoblGobl systems are generally designed to enhance existing systems (e.g. adding 2FA to an existing authentication system).</p>
-
-<p>Find this <a href="https://github.com/goblgobl/docs">documentation on GitHub</a> and help improve it.</p>
-
-<h2>Systems</h2>
+<header>
 <ul>
-	<li><a href={{ env.baseURL }}/assets>Assets (Static asset / image thumbnail proxy)</a>
-	<li><a href={{ env.baseURL }}/authen>Authen (Authentication Enhancement)</a>
+	<li><a href="{{ env.baseURL }}/attributions">attributions</a>
 </ul>
+</header>
 
+<main>
+<h1>Open Source tools</h1>
 
+<div class=sections>
+	<div class=section>
+		<h2>DuckDB Proxy</h2>
+		<p>An HTTP proxy for DuckDB. Execute arbitrary SQL and get JSON responses.</p>
+		<ul class=links>
+			<li><a href="demo/duckdb-proxy">demo</a>
+			<li><a href="docs/duckdb-proxy">docs</a>
+			<li><a href="https://github.com/goblgobl/duckdb-proxy/">github</a>
+		</ul>
+		<p><strong>warning:</strong> In DuckDB, a <code>select</code> is able to read arbitrary system files. Furthermore, DuckDB can load remote extensions and files. Do not expose this directly to untrusted users.</p>
+	</div>
+
+	<div class=section>
+		<h2>Assets</h2>
+		<p>Proxy server for static assets (e.g. css, js, fonts) as well as image resizing (using vipsthumbnail). It is a Go executable. It is open source, easy to install, reliable, secure and performant.</p>
+		<ul class=links>
+			<li><a href="docs/assets">docs</a>
+			<li><a href="https://github.com/goblgobl/assets/">github</a>
+		</ul>
+	</div>
+
+	<div class=section>
+		<h2>Authen</h2>
+		<p>Webservice for enhancing an existing authentication system.</p>
+		<ul class=links>
+			<li><a href="docs/authen">docs</a>
+			<li><a href="https://github.com/goblgobl/authen/">github</a>
+		</ul>
+	</div>
+</div>
+</main>

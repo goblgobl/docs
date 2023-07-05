@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name=viewport content="width=device-width">
+<link rel=stylesheet href="{{ 'docs.css' | asset_url}}">
+<title>{{ title }} | goblgobl</title>
+<link rel=icon type=image/png href="{{ 'favicon.png' | asset_url}}">
+<header>
+	<ul>
+		<li><a href={{ env.baseURL }}/>home</a>
+		<li><a href={{ env.baseURL }}/docs/duckdb-proxy>duckdb-proxy</a>
+		<li><a href={{ env.baseURL }}/docs/assets>assets</a>
+		<li><a href={{ env.baseURL }}/docs/authen>authen</a>
+	</ul>
+	<ul>
+		<li><a href=https://github.com/goblgobl/{{ (section or '') }}>GitHub</a>
+	</ul>
+</header>
+<div id=altnav>☰</div>
+<div id=nav>{%- include '../docs/' + (section or '') + '/_nav.njk' %}</div>
+<main>{{ content | safe }}</main>
+<script src={{ env.baseURL }}/assets/docs.js></script>

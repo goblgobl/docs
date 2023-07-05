@@ -1,13 +1,13 @@
 {
-	"name": "goblgobl.com docs",
+	"name": "goblgobl.com website",
 	"version": "1.0.0",
 	"description": "",
 	"keywords": [],
 	"author": "",
 	"devDependencies": {
-		"sass": "^1.55.0",
-		"@11ty/eleventy": "^1.0.2",
+		"sass": "^1.63.6",
+		"@11ty/eleventy": "^2.0.1",
 		"@grimlink/eleventy-plugin-sass": "^1.0.3",
-		"@11ty/eleventy-plugin-syntaxhighlight": "^4.1.0"
+		"@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0"
 	}
 }

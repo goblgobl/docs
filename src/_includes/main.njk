@@ -1,28 +1,32 @@
 <!DOCTYPE html>
+<html lang="en-US">
 <meta charset="utf-8">
-<meta name=viewport content="width=device-width">
+<meta name=referrer content=origin>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=description content="open source software">
+<title>{{ title }}</title>
 <style>
-@font-face {
-	font-family: 'ds';
-	font-display: fallback;
-	src: url('{{ env.baseURL }}/font.woff2') format('woff2');
-}
-body{font-family: 'ds', sans-serif;}
+* {margin: 0; padding: 0;}
+*, *:before, *:after { box-sizing: border-box; }
+ul{list-style: none}
+body{font-family: sans-serif; font-size:18px}
+main,footer {margin: 0 auto; max-width:900px;padding:0 20px;}
+h1,h2{font-weight: normal;}
+h1{margin-bottom: 40px;}
+a{text-decoration: none;color:#1c5bb3}
+a:hover{text-decoration: underline}
+p{line-height: 26px;margin-bottom: 20px}
+.sections{display:flex;flex-direction: column;}
+.section{border: solid #ff79c6; border-width: 0 0 1px 0; padding: 10px 0}
+.section:last-of-type{border: 0;}
+.section h2{margin-bottom: 10px;}
+.links {display: flex;list-style: none; gap: 0 20px;margin:15px 0}
+.links a {display: inline-block; padding: 10px;background:#333;border-radius:4px;color:#fff;box-shadow: 0 0 5px 0 #000;}
+.links a:hover {background:#000;box-shadow: 0 0 3px 0 #000;text-decoration: none}
+code{background:#eee;padding:2px;border-radius:2px;}
+header{display: flex;justify-content: flex-end}
+header a{display: inline-block;background:#e6f3ff;line-height:35px;border-radius:0 0 4px 4px;padding:0 20px}
+header a:hover{background:#fffdd4;text-decoration: none;color:#000}
 </style>
-<link href={{ env.baseURL }}/css/main.css rel=stylesheet>
-<title>{{ title }} | GoblGobl Docs</title>
-<link rel=icon type="image/png" href="{{ env.baseURL }}/favicon.png">
-<header>
-	<ul>
-		<li><a href={{ env.baseURL }}/>Home</a>
-		<li><a href={{ env.baseURL }}/assets>Assets</a>
-		<li><a href={{ env.baseURL }}/authen>Authen</a>
-	</ul>
-	<ul>
-		<li><a href=https://github.com/goblgobl/{{ (section or '') }}>GitHub</a>
-	</ul>
-</header>
-<div id=altnav>☰</div>
-<div id=nav>{%- include '../' + (section or '') + '/_nav.njk' %}</div>
-<main>{{ content | safe }}</main>
-<script src={{ env.baseURL }}/docs.js></script>
+<link rel=icon type=image/png href="{{ 'favicon.png' | asset_url}}">
+{{ content | safe }}
