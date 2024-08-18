@@ -5,7 +5,7 @@
 	"keywords": [],
 	"author": "",
 	"devDependencies": {
-		"sass": "^1.63.6",
+		"sass": "^1.77.8",
 		"@11ty/eleventy": "^2.0.1",
 		"@grimlink/eleventy-plugin-sass": "^1.0.3",
 		"@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0"

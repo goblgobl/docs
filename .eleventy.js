@@ -7,8 +7,9 @@ const package = require('./package.json');
 
 module.exports = function(config) {
 	config.addPassthroughCopy('src/assets/docs.js');
+	config.addPassthroughCopy('src/docs/assets/tests');
 	config.addPassthroughCopy('src/assets/favicon.png');
-	config.setTemplateFormats(['html', 'njk']);
+	config.setTemplateFormats(['html', 'njk', 'md']);
 
 	config.addPlugin(syntaxHighlight);
 	config.addPlugin(pluginSass, {

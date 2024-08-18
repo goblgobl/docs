@@ -1,9 +1,9 @@
 ---
-layout: main.njk
-title: duckdb-proxy demo | pondz
+title: duckdb-proxy demo
 ---
-<style>
-h1{margin-bottom: 10px}
+{% extends 'main.njk' %}
+
+{% block styles %}
 form > div {margin-bottom: 10px;display: flex;flex-direction:column}
 textarea{border:1px solid #ccc;padding:20px;width:100%;}
 main{padding-bottom: 50px;}
@@ -13,14 +13,9 @@ button{padding: 5px 10px;align-self:flex-end;cursor:pointer;box-shadow: 0 0 2px 
 button:hover{background:#e6f3ff}
 #result{border: 1px solid #ccc;padding: 20px;margin-top: 20px;overflow:auto}
 #note{margin-top:100px;font-size: 90%;}
-</style>
-<header>
-<ul>
-	<li><a href="{{ env.baseURL }}/">home</a>
-</ul>
-</header>
+{% endblock %}
 
-<main>
+{% block content %}
 <h1>duckdb-proxy demo</h1>
 <p>Write your SQL (e.g. <code>select * from drives)</code>, enter the necessary parameters and click "run".</p>
 
@@ -48,12 +43,12 @@ order by count(*) filter (where failure) * 100 / count(*) desc</textarea>
 <pre id=result>Click "run" to execute the SQL and see the result</pre>
 
 <div id=note>
-<h5>Remarks</h5>
-<p>For the purpose of this demo, and because DuckDB is very powerful and dangerous to publically expose, duckdb-proxy was started with the <code>--readonly</code> and <code>--max_limit=500</code> flags. The <code>max_limit</code> flag implies <code>--with_wrap</code> which causes every SQL statement to be wrapped in a CTE.</p>
+	<h5>Remarks</h5>
+	<p>For the purpose of this demo, and because DuckDB is very powerful and dangerous to publicly expose, duckdb-proxy was started with the <code>--readonly</code> and <code>--max_limit=500</code> flags. The <code>max_limit</code> flag implies <code>--with_wrap</code> which causes every SQL statement to be wrapped in a CTE.</p>
 
-<p>This single-table demo is based on the <a href=https://www.backblaze.com/b2/hard-drive-test-data.html>Backblaze data dumps</a></p>
-</note>
-</main>
+	<p>This single-table demo is based on the <a href=https://www.backblaze.com/b2/hard-drive-test-data.html>Backblaze data dumps</a></p>
+</div>
+
 <script type=text/javascript>
 (() => {
 	const form = document.getElementById('demo');
@@ -61,7 +56,6 @@ order by count(*) filter (where failure) * 100 / count(*) desc</textarea>
 	const params = document.getElementById('params');
 	const result = document.getElementById('result');
 	sql.focus();
-
 
 	form.addEventListener('submit', function(e) {
 		e.preventDefault();
@@ -110,3 +104,4 @@ order by count(*) filter (where failure) * 100 / count(*) desc</textarea>
 	})
 })();
 </script>
+{% endblock %}

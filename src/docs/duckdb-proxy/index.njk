@@ -7,11 +7,13 @@ section: duckdb-proxy
 <h1>duckdb-proxy</h1>
 <p>duckdb-proxy is a proxy for accessing DuckDB over HTTP. It exposes very simple and powerful endpoints that allow arbitrary execution of SQL statements and returns JSON results.</p>
 
+<p>See a <a href="https://www.goblgobl.com/demo/duckdb-proxy/">live demo<a>.</p>
+
 <p class=warning>Because of DuckDB's flexibility, (i.e. it's ability to directly query files on the filesystem), this proxy should not exposed directly to untrusted users.</p>
 
 <h3 class=section>Usage</h3>
 <a name=usage></a>
-<p>Download duckdb-proxy from the <a href="https://github.com/pondzdev/duckdb-proxy/releases">project release page</a>.</p>
+<p>Download duckdb-proxy from the <a href="https://github.com/goblgobl/duckdb-proxy/releases">project release page</a>.</p>
 
 <p>duckdb-proxy is configured via command line arguments</p>
 
@@ -19,11 +21,9 @@ section: duckdb-proxy
 # can be run without any arguments, will open/create a "db.duckdb" file
 $ ./duckdb-proxy
 
-
 # can be given a path to an existing DuckDB database
 # (the DB is created if it doesn't exist, but the directory must already exist)
 $ ./duckdb-proxy db/mydatabase.duckdb
-
 
 # open the database in readonly (DB must exist in this case)
 $ ./duckdb-proxy --readonly db/mydatabase.duckdb
@@ -36,6 +36,7 @@ $ curl http://localhost:8012/api/1/exec \
 	 -d '{"sql": "select version()"}'
 {
  "cols": ["version()"],
+ "types": ["varchar"],
  "rows": [
 	 ["v0.8.1"]
  ]
@@ -148,7 +149,7 @@ curl "http://localhost:8012/api/1/exec" -d '{
 	</div>
 </div>
 
-<p>As an alternative, <code>POST /api/1/exec/$ID</code> can also be used. This can be useful when <a href=#config_log_http>--log_http</a> is set in order to generate more meaningful access log (since the log's <code>path</code> attribute will contain the URL, including the <code>$ID</code>) .
+<p>As an alternative, <code>POST /api/1/exec/$ID</code> can also be used, where <code>$ID</code> is any abitrary value. This can be useful when <a href=#config_log_http>--log_http</a> is set in order to generate more meaningful access log (since the log's <code>path</code> attribute will contain the URL, including the <code>$ID</code>) .
 
 <h2 class=section>Errors and Codes</h2>
 <a name=errors></a>
@@ -162,7 +163,7 @@ $ curl http://127.0.0.1:8012/hello
 {"code": 2, "err": "not found"}
 {% endhighlight %}
 
-<p>Validation errors follow the same pattern, which each validation type having a distinct code. Validation errors always have a <code>code: 11</code> and a <code>validation</code> field that contains a list of errors. Each error contains a <code>field</code>, <code>code</code>, <code>err</code> and optional <code>data</code>.</p>
+<p>Validation errors follow the same pattern, with each validation type having a distinct code. Validation errors always have a <code>code: 11</code> and a <code>validation</code> field that contains a list of errors. Each error contains a <code>field</code>, <code>code</code>, <code>err</code> and optional <code>data</code>.</p>
 
 <p>For example, the error when a required field is missing looks like:</p>
 
