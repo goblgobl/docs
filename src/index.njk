@@ -4,69 +4,75 @@ title: goblgobl
 {% extends 'main.njk' %}
 
 {% block styles %}
-main{margin-top: 20px;display: flex; gap: 25px}
-.sections{display:flex;flex-direction: column;width:50%}
-.section{background: #f0f0f0;padding: 10px; margin-bottom: 20px;border-radius:4px;border:1px solid #ddd}
-.section h2{margin-bottom: 10px;}
-.links {display: flex;list-style: none; gap: 0 20px;margin:15px 0 0}
-.links a {display: inline-block; padding: 8px 10px;background:#ff3cbc;color: #fff;border-radius:4px}
-.links a:hover {background: #ffd8d8;color:#000;text-decoration:none;}
-@media (max-width: 750px) {
-	main { flex-direction: column-reverse }
-	.sections {width: 100%}
-}
+main{ margin-top: 20px; width: 750px}
+.section{ background: #f0f0f0; margin-bottom: 20px; border-radius:4px; border:1px solid #ddd; }
+.section > div { display: flex; }
+.section h3 { padding: 10px;}
+.links { margin-left: auto; display: flex; list-style: none; }
+.links li:first-of-type a{ border-radius: 4px 0 0 4px;border-left: 0; }
+.links li:last-of-type a{ border-radius: 0 4px 4px 0; }
+.links a { display: inline-block; padding: 5px 10px; background: #ff3cbc; color: #fff; border: 1px solid transparent; border-left: 1px solid #d0b2b2 }
+.links a:hover { background: #ccc; color:#000; text-decoration:none; border: 1px solid #aaa !important;}
+.section p { margin: 0; padding: 0 10px 10px;}
 {% endblock %}
 {% block header %}{% endblock %}
 
 {% block content %}
-<div class=sections>
-	<h1>Open Source tools</h1>
-	<div class=section>
-		<h2>DuckDB Proxy</h2>
-		<p>An HTTP proxy for DuckDB. Execute arbitrary SQL and get JSON responses.</p>
+<div class=section>
+	<div>
+		<h3>Nintendo Switch Games JSON API</h3>
+		<ul class=links>
+			<li><a href="/nintendo/docs">api</a>
+			<li><a href="/nintendo">ui</a>
+		</ul>
+	</div>
+	<p>JSON API for listing and searching Nintendo Switch Games.</p>
+</div>
+
+<div class=section>
+	<div>
+		<h3>Lobste.rs JSON API</h3>
+		<ul class=links>
+			<li><a href="/lobsters/docs">api</a>
+			<li><a href="/lobsters">ui</a>
+		</ul>
+	</div>
+	<p>JSON API for listing and searching posts made on lobste.rs</p>
+</div>
+
+<div class=section>
+	<div>
+		<h3>DuckDB Proxy</h3>
 		<ul class=links>
 			<li><a href="demo/duckdb-proxy">demo</a>
 			<li><a href="docs/duckdb-proxy">docs</a>
 			<li><a href="https://github.com/goblgobl/duckdb-proxy/">github</a>
 		</ul>
 	</div>
-
-	<div class=section>
-		<h2>Assets</h2>
-		<p>Proxy server for static assets (e.g. css, js, fonts) as well as image resizing (using vipsthumbnail).</p>
-		<ul class=links>
-			<li><a href="docs/assets">docs</a>
-			<li><a href="https://github.com/goblgobl/assets/">github</a>
-		</ul>
-	</div>
-
-	<div class=section>
-		<h2>Authen</h2>
-		<p>Webservice for enhancing an existing authentication system.</p>
-		<ul class=links>
-			<li><a href="docs/authen">docs</a>
-			<li><a href="https://github.com/goblgobl/authen/">github</a>
-		</ul>
-	</div>
+	<p>An HTTP proxy for DuckDB. Execute arbitrary SQL and get JSON responses.</p>
 </div>
-<div class=sections>
-	<h1>Open APIs</h1>
-	<div class=section>
-		<h2>Nintendo Switch Games JSON API</h2>
-		<p><strong>Experimental</strong> JSON API (and basic UI) of to list and search Nintendo Switch Games.</p>
-		<ul class=links>
-			<li><a href="/nintendo/docs">api</a>
-			<li><a href="/nintendo">ui</a>
-		</ul>
-	</div>
 
-	<div class=section>
-		<h2>Lobste.rs JSON API</h2>
-		<p><strong>Experimental</strong> JSON API (and basic UI) of <a href="https://lobste.rs">lobste.rs</a> posts.</p>
+<div class=section>
+	<div>
+		<h3>http.zig</h3>
 		<ul class=links>
-			<li><a href="/lobsters/docs">api</a>
-			<li><a href="/lobsters">ui</a>
+			<li><a href="httpz">docs</a>
+			<li><a href="https://github.com/karlseguin/http.zig">github</a>
 		</ul>
 	</div>
+	<p>An HTTP/1.1 server for zig.</p>
 </div>
+
+<div class=section>
+	<div>
+		<h3>zul</h3>
+		<ul class=links>
+			<li><a href="zul">docs</a>
+			<li><a href="https://github.com/karlseguin/zul/">github</a>
+		</ul>
+	</div>
+	<p>Zig utility library.</p>
+</div>
+
+
 {% endblock %}
